@@ -1,0 +1,996 @@
+:root {
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.notenest-app {
+    --surface: #fff;
+    --page: #f4f7fb;
+    --text: #202a38;
+    --muted: #7b8798;
+    --border: #e7edf4;
+    --soft: #f6f8fc;
+    --accent: #3978e8;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--page);
+}
+
+.notenest-app.dark-mode {
+    --surface: #192332;
+    --page: #111925;
+    --text: #edf2f8;
+    --muted: #9aa8bb;
+    --border: #2d394a;
+    --soft: #202c3c;
+    --accent: #78a5ff;
+}
+
+.nn-header {
+    min-height: 76px;
+    padding: 14px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.nn-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 760;
+    letter-spacing: -.8px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nn-brand>span:last-child {
+    color: var(--accent);
+}
+
+.nn-brand-icon {
+    display: grid;
+    place-items: center;
+    width: 39px;
+    height: 39px;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 12px;
+}
+
+.nn-saved {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.nn-saved i {
+    width: 7px;
+    height: 7px;
+    background: #25b47a;
+    border-radius: 50%;
+}
+
+.nn-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nn-url-pill {
+    max-width: 300px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    color: var(--muted);
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    font-size: 12px;
+}
+
+.nn-url-pill span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nn-icon-btn {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+}
+
+.nn-icon-btn:hover {
+    color: var(--accent);
+    background: var(--soft);
+}
+
+.nn-layout {
+    width: min(1320px, 92%);
+    margin: 36px auto 55px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 305px;
+    align-items: start;
+    gap: 25px;
+}
+
+.nn-editor-card,
+.nn-options-card {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    box-shadow: 0 7px 26px rgba(31, 49, 76, .035);
+}
+
+.nn-editor-card {
+    padding: 30px 36px 22px;
+}
+
+.nn-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.nn-edit-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+}
+
+.nn-title-input {
+    width: 100%;
+    margin: 26px 0 20px;
+    padding: 0;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: clamp(25px, 3vw, 35px);
+    font-weight: 750;
+    letter-spacing: -1px;
+}
+
+.nn-title-input::placeholder {
+    color: #aab4c2;
+}
+
+.nn-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+    padding: 9px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.nn-toolbar button {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 33px;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+}
+
+.nn-toolbar button:hover {
+    color: var(--accent);
+    background: var(--soft);
+}
+
+.nn-toolbar>span {
+    width: 1px;
+    height: 21px;
+    margin: 0 7px;
+    background: var(--border);
+}
+
+.nn-writing-area {
+    min-height: 425px;
+    padding: 25px 0;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.95;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    outline: none;
+    caret-color: var(--accent);
+}
+
+.nn-writing-area:empty::before {
+    content: attr(data-placeholder);
+    color: #aab4c2;
+    pointer-events: none;
+}
+
+.nn-writing-area ul,
+.nn-writing-area ol {
+    padding-left: 25px;
+}
+
+.nn-writing-area:focus {
+    outline: none;
+}
+
+.nn-editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
+
+.nn-counts {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.nn-counts b {
+    font-weight: 400;
+}
+
+.nn-footer-actions {
+    display: flex;
+    gap: 9px;
+}
+
+.nn-primary,
+.nn-secondary,
+.nn-new-note {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 650;
+    transition: background .18s, transform .18s;
+}
+
+.nn-primary,
+.nn-new-note {
+    color: #fff;
+    background: #3978e8;
+    border: 1px solid #3978e8;
+}
+
+.nn-primary:hover,
+.nn-new-note:hover {
+    background: #2865d1;
+    transform: translateY(-1px);
+}
+
+.nn-secondary {
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.nn-secondary:hover {
+    background: var(--soft);
+}
+
+.nn-options-card {
+    padding: 23px 20px;
+}
+
+.nn-panel-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+    color: var(--muted);
+}
+
+.nn-panel-title h2 {
+    margin: 0 0 6px;
+    color: var(--text);
+    font-size: 16px;
+}
+
+.nn-panel-title p {
+    margin: 0;
+    font-size: 11px;
+}
+
+.nn-new-note {
+    width: 100%;
+    min-height: 43px;
+    font-size: 13px;
+}
+
+/* SEARCH NOTES */
+
+.nn-search-box {
+    position: relative;
+    margin-top: 19px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid var(--border);
+}
+
+.nn-search-label {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.1px;
+}
+
+.nn-search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 0 10px;
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.nn-search-input-wrap:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(57, 120, 232, .09);
+}
+
+.nn-search-input-wrap>svg {
+    flex-shrink: 0;
+}
+
+.nn-search-input-wrap input {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    padding: 0;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    outline: none;
+    font-size: 11px;
+}
+
+.nn-search-input-wrap input::placeholder {
+    color: var(--muted);
+    opacity: .85;
+}
+
+.nn-search-input-wrap input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.nn-search-clear {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+}
+
+.nn-search-clear:hover {
+    color: var(--accent);
+    background: var(--surface);
+}
+
+.nn-search-results {
+    margin-top: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    animation: nn-search-appear .18s ease-out;
+}
+
+@keyframes nn-search-appear {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nn-search-heading {
+    margin: 0;
+    padding: 11px 12px;
+    color: var(--muted);
+    background: var(--soft);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.nn-search-result {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 10px;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    transition: background .18s;
+}
+
+.nn-search-result:last-child {
+    border-bottom: 0;
+}
+
+.nn-search-result:hover,
+.nn-search-result.active {
+    background: var(--soft);
+}
+
+.nn-search-result.active {
+    box-shadow: inset 3px 0 var(--accent);
+}
+
+.nn-search-result-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 31px;
+    height: 31px;
+    color: var(--accent);
+    background: rgba(57, 120, 232, .09);
+    border-radius: 8px;
+}
+
+.nn-search-result-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.nn-search-result-text strong {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.nn-search-result-text small {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.nn-search-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 22px 12px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.nn-search-empty>svg {
+    color: var(--accent);
+    opacity: .8;
+}
+
+.nn-search-empty span {
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 650;
+}
+
+.nn-search-empty small {
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.nn-option-group {
+    padding: 21px 0 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.nn-group-label {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 1.1px;
+}
+
+.nn-option {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    min-height: 41px;
+    padding: 9px 7px;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+    text-align: left;
+    font-size: 12px;
+}
+
+.nn-option:hover {
+    color: var(--accent);
+    background: var(--soft);
+}
+
+.nn-option span {
+    flex: 1;
+}
+
+.nn-option small {
+    padding: 4px 7px;
+    background: var(--soft);
+    border-radius: 5px;
+    font-size: 10px;
+}
+
+.nn-stats {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+.nn-stats h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 14px;
+    font-size: 12px;
+}
+
+.nn-stats>div {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 11px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.nn-stats strong {
+    color: var(--text);
+}
+
+.nn-tip {
+    display: flex;
+    gap: 10px;
+    margin-top: 19px;
+    padding: 12px 10px;
+    color: var(--accent);
+    background: rgba(57, 120, 232, .07);
+    border-radius: 9px;
+}
+
+.nn-tip strong {
+    color: var(--text);
+    font-size: 11px;
+}
+
+.nn-tip p {
+    margin: 5px 0 0;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.nn-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 13px 17px;
+    color: #fff;
+    background: #19885f;
+    border-radius: 9px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .14);
+    font-size: 13px;
+}
+
+.nn-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(13, 22, 35, .5);
+}
+
+.nn-modal {
+    position: relative;
+    width: min(420px, 100%);
+    padding: 28px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, .2);
+}
+
+.nn-modal-close {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    display: grid;
+    place-items: center;
+    width: 33px;
+    height: 33px;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+    border-radius: 7px;
+}
+
+.nn-modal-icon {
+    display: grid;
+    place-items: center;
+    width: 43px;
+    height: 43px;
+    color: var(--accent);
+    background: var(--soft);
+    border-radius: 12px;
+}
+
+.nn-modal h2 {
+    margin: 18px 0 8px;
+    font-size: 20px;
+}
+
+.nn-modal p {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.nn-password-input {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 17px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.nn-password-input input {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 0;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    outline: 0;
+}
+
+.nn-password-input button {
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    background: transparent;
+    border: 0;
+}
+
+.nn-field-label {
+    display: block;
+    margin: 15px 0 7px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.nn-modal-text-input {
+    width: 100%;
+    padding: 12px;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.nn-modal-submit {
+    width: 100%;
+    margin-top: 17px;
+}
+
+.nn-empty {
+    min-height: 75vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--accent);
+}
+
+.nn-empty h2 {
+    color: var(--text);
+}
+
+@media (max-width: 950px) {
+    .nn-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .nn-options-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 18px;
+    }
+
+    .nn-panel-title,
+    .nn-new-note,
+    .nn-search-box,
+    .nn-stats,
+    .nn-tip {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 680px) {
+    .nn-header {
+        padding: 14px 4%;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .nn-brand {
+        font-size: 20px;
+    }
+
+    .nn-saved {
+        order: 3;
+        width: 100%;
+    }
+
+    .nn-header-actions {
+        margin-left: auto;
+        gap: 4px;
+    }
+
+    .nn-url-pill {
+        max-width: 155px;
+    }
+
+    .nn-layout {
+        width: 94%;
+        margin: 18px auto 32px;
+        gap: 16px;
+    }
+
+    .nn-editor-card {
+        padding: 22px 17px 18px;
+    }
+
+    .nn-title-input {
+        font-size: 26px;
+    }
+
+    .nn-writing-area {
+        min-height: 340px;
+    }
+
+    .nn-edit-time {
+        margin-left: 0;
+    }
+
+    .nn-options-card {
+        display: block;
+        padding: 20px 17px;
+    }
+
+    .nn-editor-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .nn-footer-actions {
+        width: 100%;
+    }
+
+    .nn-footer-actions button {
+        flex: 1;
+    }
+
+    .nn-search-input-wrap input {
+        font-size: 12px;
+    }
+}
+
+
+/* =========================================
+   RESPONSIVE DESIGN - 650px ONLY
+========================================= */
+
+@media (max-width: 650px) {
+    .nn-header {
+        padding: 12px 4%;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .nn-brand {
+        font-size: 20px;
+    }
+
+    .nn-brand-icon {
+        width: 35px;
+        height: 35px;
+    }
+
+    .nn-saved {
+        order: 3;
+        width: 100%;
+    }
+
+    .nn-header-actions {
+        margin-left: auto;
+        gap: 4px;
+    }
+
+    .nn-url-pill {
+        max-width: 135px;
+        padding: 9px;
+    }
+
+    .nn-layout {
+        width: 94%;
+        margin: 18px auto 30px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .nn-editor-card {
+        padding: 20px 15px 17px;
+    }
+
+    .nn-breadcrumb {
+        gap: 7px;
+        font-size: 11px;
+    }
+
+    .nn-edit-time {
+        margin-left: 0;
+    }
+
+    .nn-title-input {
+        margin: 22px 0 18px;
+        font-size: 26px;
+    }
+
+    .nn-toolbar {
+        gap: 3px;
+    }
+
+    .nn-toolbar button {
+        width: 32px;
+        height: 32px;
+    }
+
+    .nn-toolbar>span {
+        margin: 0 3px;
+    }
+
+    .nn-writing-area {
+        min-height: 320px;
+        font-size: 14px;
+        line-height: 1.8;
+    }
+
+    .nn-editor-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .nn-counts {
+        flex-wrap: wrap;
+    }
+
+    .nn-footer-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .nn-footer-actions button {
+        flex: 1;
+    }
+
+    .nn-options-card {
+        display: block;
+        padding: 20px 15px;
+    }
+
+    .nn-search-input-wrap input {
+        font-size: 12px;
+    }
+
+    .nn-toast {
+        right: 12px;
+        bottom: 12px;
+        left: 12px;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .nn-modal-backdrop {
+        padding: 12px;
+    }
+
+    .nn-modal {
+        padding: 24px 18px;
+    }
+}

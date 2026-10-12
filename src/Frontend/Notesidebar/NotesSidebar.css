@@ -1,0 +1,182 @@
+.nns-sidebar {
+    width: 250px;
+    min-width: 220px;
+    padding: 22px 16px;
+    background: var(--nn-sidebar-bg, #ffffff);
+    border: 1px solid var(--nn-sidebar-border, #e8ecef);
+    border-radius: 16px;
+    color: var(--nn-sidebar-text, #25332d);
+    align-self: start;
+}
+
+.nns-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.nns-heading h2 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.nns-heading p {
+    margin: 5px 0 0;
+    color: #89948e;
+    font-size: 12px;
+}
+
+.nns-add-button {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #dce8df;
+    border-radius: 10px;
+    color: #218653;
+    background: transparent;
+    cursor: pointer;
+}
+
+.nns-create-form,
+.nns-rename-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.nns-create-form input,
+.nns-rename-form input {
+    width: 100%;
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid #dce5df;
+    border-radius: 8px;
+    outline-color: #29975c;
+    background: transparent;
+    color: inherit;
+    font-size: 12px;
+}
+
+.nns-create-form button,
+.nns-rename-form button {
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: #238951;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.nns-folder-list {
+    display: grid;
+    gap: 6px;
+}
+
+.nns-folder-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 42px;
+    border-radius: 9px;
+}
+
+.nns-folder-row.selected {
+    background: #eaf6ee;
+    color: #197643;
+}
+
+.nns-folder-select {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    padding: 11px 9px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.nns-folder-select span {
+    flex: 1;
+    overflow: hidden;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nns-folder-select small {
+    color: #87938b;
+    font-size: 11px;
+}
+
+.nns-folder-actions {
+    display: flex;
+    gap: 2px;
+    padding-right: 5px;
+}
+
+.nns-folder-actions button {
+    display: grid;
+    width: 25px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #718078;
+    cursor: pointer;
+}
+
+.nns-folder-actions button:hover,
+.nns-add-button:hover {
+    background: #eaf6ee;
+    color: #197643;
+}
+
+.nns-sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid #edf0ee;
+    color: #87938b;
+    font-size: 12px;
+}
+
+.dark-mode .nns-sidebar {
+    --nn-sidebar-bg: #18211c;
+    --nn-sidebar-border: #2b3830;
+    --nn-sidebar-text: #e6eee8;
+}
+
+.dark-mode .nns-folder-row.selected {
+    background: #203d2b;
+    color: #8ee0a8;
+}
+
+.dark-mode .nns-create-form input,
+.dark-mode .nns-rename-form input {
+    border-color: #35483b;
+}
+
+.dark-mode .nns-sidebar-footer {
+    border-color: #2b3830;
+}
+
+@media (max-width: 700px) {
+    .nns-sidebar {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+}

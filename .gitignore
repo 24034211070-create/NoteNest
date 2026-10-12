@@ -1,0 +1,43 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build files
+dist/
+dist-ssr/
+
+# Local environment files
+*.local
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Prisma local database files
+Backend/prisma/*.db
+Backend/prisma/*.db-journal
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# tool-generated Prisma skill files
+Backend/.agents/
+Backend/.claude/
+Backend/.windsurf/
