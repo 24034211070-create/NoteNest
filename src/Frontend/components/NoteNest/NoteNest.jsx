@@ -897,15 +897,15 @@ export default function NoteNest() {
             ));
 
             notify(isAlreadySaved
-                ? "Note database mein update ho gayi"
-                : "Note database mein save ho gayi"
+                ? "Notes Are Update In Database"
+                : "Notes Are Save in Database"
             );
         } catch (error) {
             console.error("Failed to save note:", error);
             notify(
                 error.response?.data?.error ||
                 error.response?.data?.message ||
-                "Note save nahi hui. Backend check karo."
+                "Notes Are Not Save, Please Check Backend ."
             );
         }
     }
