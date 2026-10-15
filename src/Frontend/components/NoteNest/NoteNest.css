@@ -576,7 +576,7 @@ button {
     border: 0;
     border-radius: 7px;
     text-align: left;
-    font-size: 12px;
+    /* font-size: 12px; */
 }
 
 .nn-option:hover {
@@ -661,15 +661,17 @@ button {
     font-size: 13px;
 }
 
+
 .nn-modal-backdrop {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: 9999;
     display: grid;
     place-items: center;
     padding: 20px;
-    background: rgba(13, 22, 35, .5);
+    background: rgba(13, 22, 35, 0.5);
 }
+
 
 .nn-modal {
     position: relative;
