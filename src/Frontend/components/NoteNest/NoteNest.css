@@ -171,12 +171,12 @@ button {
     font-size: 11px;
 }
 
-.nn-edit-time {
+/* .nn-edit-time {
     display: inline-flex;
     align-items: center;
     gap: 5px;
     margin-left: auto;
-}
+} */
 
 .nn-title-input {
     width: 100%;
@@ -372,14 +372,6 @@ button {
     padding: 14px 0 7px;
     border-bottom: 1px solid var(--border);
 }
-/* 
-.nn-group-label {
-    margin: 0 0 7px;
-    color: var(--muted);
-    font-size: 9px;
-    font-weight: 750;
-    letter-spacing: .9px;
-} */
 
 .nn-option {
     display: flex;

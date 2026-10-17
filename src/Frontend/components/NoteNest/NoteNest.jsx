@@ -961,7 +961,7 @@ export default function NoteNest() {
                 <section className="nn-editor-card">
                     <div className="nn-breadcrumb">
                         <span>My Notes</span><span>/</span><span>Current Note</span>
-                        <span className="nn-edit-time"><Clock size={13} /> Edited recently</span>
+                        {/* <span className="nn-edit-time"><Clock size={13} /> Edited recently</span> */}
                     </div>
 
                     <input
@@ -1024,11 +1024,7 @@ export default function NoteNest() {
                     </div>
 
                     <div className="nn-option-group">
-                        {/* <p className="nn-group-label">PRIVACY & URL</p>
-                        <button className="nn-option" onClick={togglePrivacy}>
-                            {activeNote.isPublic ? <Eye size={17} /> : <EyeOff size={17} />}
-                            <span>{activeNote.isPublic ? "Public note" : "Private note"}</span>
-                        </button> */}
+
                         <button
                             className="nn-option"
                             onClick={() => {
