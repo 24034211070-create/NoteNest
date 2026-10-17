@@ -1152,26 +1152,18 @@ export default function NoteNest() {
                         </button>
 
 
+
                         {activeNote.isPasswordProtected && (
                             <button
                                 type="button"
                                 className="nn-option"
                                 disabled={removingPassword}
                                 onClick={() => {
-                                    window.alert("Remove Password button clicked!");
-
                                     if (isLocked) {
-                                        window.alert("Pehle password enter karke note unlock karo.");
+                                        notify("Password remove karne se pehle note unlock karo.");
                                         return;
                                     }
-
-                                    const confirmed = window.confirm(
-                                        "Are you sure you want to remove the password protection?\n\nClick OK to remove the password, or Cancel to keep it."
-                                    );
-
-                                    if (confirmed) {
-                                        removePassword();
-                                    }
+                                    setShowRemovePasswordConfirm(true);
                                 }}
                             >
                                 <EyeOff size={17} />
