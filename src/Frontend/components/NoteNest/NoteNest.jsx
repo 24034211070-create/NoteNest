@@ -1024,11 +1024,11 @@ export default function NoteNest() {
                     </div>
 
                     <div className="nn-option-group">
-                        <p className="nn-group-label">PRIVACY & URL</p>
+                        {/* <p className="nn-group-label">PRIVACY & URL</p>
                         <button className="nn-option" onClick={togglePrivacy}>
                             {activeNote.isPublic ? <Eye size={17} /> : <EyeOff size={17} />}
                             <span>{activeNote.isPublic ? "Public note" : "Private note"}</span>
-                        </button>
+                        </button> */}
                         <button
                             className="nn-option"
                             onClick={() => {

@@ -229,7 +229,7 @@ button {
 }
 
 .nn-writing-area {
-    min-height: 425px;
+    /* min-height: 425px; */
     padding: 22px 0;
     color: var(--text);
     font-size: 14px;
@@ -372,14 +372,14 @@ button {
     padding: 14px 0 7px;
     border-bottom: 1px solid var(--border);
 }
-
+/* 
 .nn-group-label {
     margin: 0 0 7px;
     color: var(--muted);
     font-size: 9px;
     font-weight: 750;
     letter-spacing: .9px;
-}
+} */
 
 .nn-option {
     display: flex;
