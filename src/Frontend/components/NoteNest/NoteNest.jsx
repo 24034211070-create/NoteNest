@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import {
     BookOpen, Check, Copy, Download, FileText, Link2, LockKeyhole,
     Moon, Plus, Save, Share2, Sun, Trash2, Eye, EyeOff, Bold, Italic,
-    Underline, AlignLeft, List, ListOrdered, Type, Settings2, Clock, X, Search
+    Underline, AlignLeft, List, ListOrdered, Type, Settings2, Clock, X,
+    Search
 } from "lucide-react";
 import "./NoteNest.css";
 import api from "../../../Api/axios";
@@ -187,6 +188,10 @@ export default function NoteNest() {
     const [urlInput, setUrlInput] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
+    // Remove Password confirmation popup
+    const [showRemovePasswordConfirm, setShowRemovePasswordConfirm] = useState(false);
+    const [removingPassword, setRemovingPassword] = useState(false);
+
     const editorRef = useRef(null);
     const messageTimer = useRef(null);
 
@@ -219,7 +224,6 @@ export default function NoteNest() {
                     return;
                 }
 
-                // FIX: Save the active local note's DB ID before normalizing IDs.
                 const localNotesBeforeLoad = readNotes();
                 const savedActiveId = localStorage.getItem(ACTIVE_NOTE_KEY);
                 const savedActiveNote = localNotesBeforeLoad.find(
@@ -261,7 +265,6 @@ export default function NoteNest() {
                     );
                     if (sharedNote) return sharedNote.id;
 
-                    // FIX: Match the previous note by its DB ID, not just its old local ID.
                     const previousActiveDatabaseNote = normalizedNotes.find(
                         (note) => note.id === savedActiveDatabaseId ||
                             note.dbId === savedActiveDatabaseId
@@ -470,7 +473,6 @@ export default function NoteNest() {
 
         notify("Note opened");
     }
-
     async function removeNote() {
         if (!activeNote || isLocked) {
             if (isLocked) notify("Delete karne se pehle note unlock karo.");
@@ -740,7 +742,6 @@ export default function NoteNest() {
 
             const { token, note } = response.data;
 
-            // Save first; React state updates after this line.
             saveUnlockedNoteSession(databaseId, token, note.content || "");
 
             setUnlockedTokens((previous) => ({
@@ -776,11 +777,15 @@ export default function NoteNest() {
         }
     }
 
+    // Popup ke Remove Password button se ye function chalega.
     async function removePassword() {
         if (!activeNote || isLocked) {
             notify("Password remove karne se pehle note unlock karo.");
             return;
         }
+
+        if (removingPassword) return;
+        setRemovingPassword(true);
 
         try {
             await api.delete(`/notes/${activeDatabaseId}/password`, {
@@ -801,6 +806,15 @@ export default function NoteNest() {
                 return next;
             });
 
+            try {
+                const saved = readStoredUnlockSessions();
+                delete saved[activeDatabaseId];
+                sessionStorage.setItem(UNLOCKED_TOKENS_KEY, JSON.stringify(saved));
+            } catch (error) {
+                console.error("Could not clear unlock session:", error);
+            }
+
+            setShowRemovePasswordConfirm(false);
             notify("Note password removed.");
         } catch (error) {
             console.error("Remove password error:", error);
@@ -809,6 +823,8 @@ export default function NoteNest() {
                 error.response?.data?.message ||
                 "Password remove nahi ho saka."
             );
+        } finally {
+            setRemovingPassword(false);
         }
     }
 
@@ -909,7 +925,6 @@ export default function NoteNest() {
             );
         }
     }
-
     if (!activeNote) {
         return (
             <div className={`notenest-app ${dark ? "dark-mode" : ""}`}>
@@ -1135,11 +1150,35 @@ export default function NoteNest() {
                             <LockKeyhole size={17} />
                             <span>{activeNote.isPasswordProtected ? "Change note password" : "Set note password"}</span>
                         </button>
+
+
                         {activeNote.isPasswordProtected && (
-                            <button className="nn-option" onClick={removePassword} disabled={isLocked}>
-                                <EyeOff size={17} /><span>Remove password</span>
+                            <button
+                                type="button"
+                                className="nn-option"
+                                disabled={removingPassword}
+                                onClick={() => {
+                                    window.alert("Remove Password button clicked!");
+
+                                    if (isLocked) {
+                                        window.alert("Pehle password enter karke note unlock karo.");
+                                        return;
+                                    }
+
+                                    const confirmed = window.confirm(
+                                        "Are you sure you want to remove the password protection?\n\nClick OK to remove the password, or Cancel to keep it."
+                                    );
+
+                                    if (confirmed) {
+                                        removePassword();
+                                    }
+                                }}
+                            >
+                                <EyeOff size={17} />
+                                <span>Remove password</span>
                             </button>
                         )}
+
                         <button
                             className="nn-option"
                             onClick={() => {
@@ -1170,6 +1209,56 @@ export default function NoteNest() {
 
             {message && (
                 <div className="nn-toast"><Check size={16} />{message}</div>
+            )}
+
+            {showRemovePasswordConfirm && (
+                <div
+                    className="nn-modal-backdrop"
+                    onClick={() => {
+                        if (!removingPassword) setShowRemovePasswordConfirm(false);
+                    }}
+                >
+                    <section
+                        className="nn-modal nn-remove-password-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="nn-remove-password-title"
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <button
+                            className="nn-modal-close"
+                            onClick={() => setShowRemovePasswordConfirm(false)}
+                            disabled={removingPassword}
+                            aria-label="Close confirmation"
+                        >
+                            <X size={18} />
+                        </button>
+                        <div className="nn-modal-icon"><LockKeyhole size={22} /></div>
+                        <h2 id="nn-remove-password-title">Remove note password?</h2>
+                        <p>
+                            Are you sure you want to remove the password protection?
+                            Anyone with access to this note link may be able to view the note.
+                        </p>
+                        <div className="nn-confirm-actions">
+                            <button
+                                type="button"
+                                className="nn-secondary"
+                                onClick={() => setShowRemovePasswordConfirm(false)}
+                                disabled={removingPassword}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="nn-danger-btn"
+                                onClick={removePassword}
+                                disabled={removingPassword}
+                            >
+                                {removingPassword ? "Removing..." : "Yes, Remove Password"}
+                            </button>
+                        </div>
+                    </section>
+                </div>
             )}
 
             {modal && (

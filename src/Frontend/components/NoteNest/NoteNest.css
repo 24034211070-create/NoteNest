@@ -350,7 +350,6 @@ button {
 }
 
 /* SEARCH NOTES */
-
 .nn-search-box {
     position: relative;
     margin-top: 19px;
@@ -576,7 +575,6 @@ button {
     border: 0;
     border-radius: 7px;
     text-align: left;
-    /* font-size: 12px; */
 }
 
 .nn-option:hover {
@@ -649,7 +647,7 @@ button {
     position: fixed;
     right: 24px;
     bottom: 24px;
-    z-index: 20;
+    z-index: 10001;
     display: flex;
     align-items: center;
     gap: 9px;
@@ -661,27 +659,37 @@ button {
     font-size: 13px;
 }
 
-
+/* MODALS */
 .nn-modal-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: grid;
-    place-items: center;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
     padding: 20px;
-    background: rgba(13, 22, 35, 0.5);
+    overflow-y: auto;
+    background: rgba(13, 22, 35, .58);
+    isolation: isolate;
 }
-
 
 .nn-modal {
     position: relative;
+    display: block;
+    flex: 0 0 auto;
     width: min(420px, 100%);
+    max-height: calc(100vh - 40px);
     padding: 28px;
+    overflow-y: auto;
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
-    box-shadow: 0 20px 70px rgba(0, 0, 0, .2);
+    box-shadow: 0 20px 70px rgba(0, 0, 0, .25);
+    opacity: 1;
+    visibility: visible;
 }
 
 .nn-modal-close {
@@ -698,6 +706,11 @@ button {
     border-radius: 7px;
 }
 
+.nn-modal-close:hover {
+    color: var(--text);
+    background: var(--soft);
+}
+
 .nn-modal-icon {
     display: grid;
     place-items: center;
@@ -710,6 +723,7 @@ button {
 
 .nn-modal h2 {
     margin: 18px 0 8px;
+    color: var(--text);
     font-size: 20px;
 }
 
@@ -782,6 +796,69 @@ button {
     color: var(--text);
 }
 
+/* REMOVE PASSWORD CONFIRMATION */
+.nn-remove-password-modal {
+    width: min(440px, 100%);
+    min-height: 0;
+    margin: auto;
+    animation: nn-modal-appear .18s ease-out;
+}
+
+.nn-remove-password-modal .nn-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+}
+
+.nn-remove-password-modal .nn-confirm-actions button {
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.nn-remove-password-modal .nn-confirm-actions button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.nn-remove-password-modal .nn-danger-btn {
+    color: #fff;
+    background: #dc2626;
+    border: 1px solid #dc2626;
+}
+
+.nn-remove-password-modal .nn-danger-btn:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.nn-remove-password-modal .nn-secondary {
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.nn-remove-password-modal .nn-secondary:hover:not(:disabled) {
+    background: var(--soft);
+}
+
+@keyframes nn-modal-appear {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* RESPONSIVE DESIGN */
 @media (max-width: 950px) {
     .nn-layout {
         grid-template-columns: 1fr;
@@ -872,11 +949,7 @@ button {
     }
 }
 
-
-/* =========================================
-   RESPONSIVE DESIGN - 650px ONLY
-========================================= */
-
+/* 650px RESPONSIVE ADJUSTMENTS */
 @media (max-width: 650px) {
     .nn-header {
         padding: 12px 4%;
@@ -993,6 +1066,15 @@ button {
     }
 
     .nn-modal {
+        max-height: calc(100vh - 24px);
         padding: 24px 18px;
+    }
+
+    .nn-remove-password-modal .nn-confirm-actions {
+        flex-direction: column-reverse;
+    }
+
+    .nn-remove-password-modal .nn-confirm-actions button {
+        width: 100%;
     }
 }
