@@ -186,7 +186,6 @@ export default function NoteNest() {
     const [unlockedTokens, setUnlockedTokens] = useState(readUnlockedTokens);
     const [showPassword, setShowPassword] = useState(false);
     const [urlInput, setUrlInput] = useState("");
-
     const [showRemovePasswordConfirm, setShowRemovePasswordConfirm] = useState(false);
     const [removingPassword, setRemovingPassword] = useState(false);
 
@@ -1011,21 +1010,21 @@ export default function NoteNest() {
 
                     <div className="nn-option-group">
                         <p className="nn-group-label">NOTE ACTIONS</p>
-                        <button className="nn-option" onClick={downloadNote}>
+                        <button className="nn-option" data-tooltip="Download this note as a text file" onClick={downloadNote}>
                             <Download size={17} /><span>Download as .txt</span>
                         </button>
-                        <button className="nn-option" onClick={copyLink}>
+                        <button className="nn-option" data-tooltip="Copy the note's shareable link" onClick={copyLink}>
                             <Copy size={17} /><span>Copy note link</span>
                         </button>
-                        <button className="nn-option" onClick={shareNote}>
+                        <button className="nn-option" data-tooltip="Share this note with others" onClick={shareNote}>
                             <Share2 size={17} /><span>Share note</span>
                         </button>
                     </div>
 
                     <div className="nn-option-group">
-
                         <button
                             className="nn-option"
+                            data-tooltip={activeNote.isPasswordProtected ? "Change the note password" : "Protect this note with a password"}
                             onClick={() => {
                                 if (activeNote.isPasswordProtected && isLocked) {
                                     setPasswordInput("");
@@ -1046,6 +1045,7 @@ export default function NoteNest() {
                             <button
                                 type="button"
                                 className="nn-option"
+                                data-tooltip="Remove password protection from this note"
                                 disabled={removingPassword}
                                 onClick={() => {
                                     if (isLocked) {
@@ -1062,12 +1062,13 @@ export default function NoteNest() {
 
                         <button
                             className="nn-option"
+                            data-tooltip="Change this note's identifier"
                             onClick={() => {
                                 setUrlInput(activeNote.id);
                                 setModal("url");
                             }}
                         >
-                            <Link2 size={17} /><span>Change note URL</span>
+                            <Link2 size={17} /><span>Share Notes</span>
                         </button>
                     </div>
                 </aside>
