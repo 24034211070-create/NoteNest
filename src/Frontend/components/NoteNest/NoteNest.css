@@ -162,7 +162,11 @@ button {
 
 .nn-editor-card {
     position: relative;
+    height: 650px;
     padding: 27px 32px 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .nn-breadcrumb {
@@ -226,6 +230,9 @@ button {
 }
 
 .nn-writing-area {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: 22px 0;
     color: var(--text);
     font-size: 14px;
