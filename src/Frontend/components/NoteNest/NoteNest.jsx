@@ -1056,7 +1056,7 @@ export default function NoteNest() {
                                 }}
                             >
                                 <EyeOff size={17} />
-                                <span>Remove password</span>
+                                <span>Copy Notes URL </span>
                             </button>
                         )}
 
