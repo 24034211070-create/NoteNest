@@ -140,11 +140,13 @@ button {
     background: var(--soft);
 }
 
+/* MAIN LAYOUT */
 .nn-layout {
+    position: relative;
     width: min(1320px, 92%);
     margin: 30px auto 45px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 285px;
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
     gap: 22px;
 }
@@ -159,6 +161,7 @@ button {
 }
 
 .nn-editor-card {
+    position: relative;
     padding: 27px 32px 20px;
 }
 
@@ -167,16 +170,10 @@ button {
     align-items: center;
     flex-wrap: wrap;
     gap: 9px;
+    padding-right: 190px;
     color: var(--muted);
     font-size: 11px;
 }
-
-/* .nn-edit-time {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-left: auto;
-} */
 
 .nn-title-input {
     width: 100%;
@@ -229,7 +226,6 @@ button {
 }
 
 .nn-writing-area {
-    /* min-height: 425px; */
     padding: 22px 0;
     color: var(--text);
     font-size: 14px;
@@ -255,12 +251,11 @@ button {
     outline: none;
 }
 
-/* Hide only the requested Save Note and Clear Text buttons. */
+/* EDITOR FOOTER */
 .nn-editor-footer .nn-footer-actions {
     display: none !important;
 }
 
-/* Keep the word and character counts visible. */
 .nn-editor-footer {
     display: flex;
     align-items: center;
@@ -327,97 +322,143 @@ button {
     background: var(--soft);
 }
 
-/* OPTIONS PANEL */
+/* OPTIONS: ICONS AT THE TOP-RIGHT */
 .nn-options-card {
-    padding: 19px 17px;
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: auto;
+    max-width: calc(100% - 28px);
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .nn-panel-title {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 15px;
-    color: var(--muted);
-}
-
-.nn-panel-title h2 {
-    margin: 0 0 4px;
-    color: var(--text);
-    font-size: 14px;
-}
-
-.nn-panel-title p {
-    margin: 0;
-    font-size: 10px;
-}
-
-/* Remove New Notes button. */
-.nn-new-note {
     display: none !important;
 }
 
-/* Remove Search Notes section. */
-.nn-search-box {
-    display: none !important;
-}
-
-/* Remove statistics and the information card shown in the screenshot. */
+.nn-new-note,
+.nn-search-box,
 .nn-stats,
 .nn-tip {
     display: none !important;
 }
 
-/* Smaller option groups and text. */
 .nn-option-group {
-    padding: 14px 0 7px;
-    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    border: 0;
+}
+
+.nn-group-label {
+    display: none !important;
 }
 
 .nn-option {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    width: 100%;
-    min-height: 35px;
-    padding: 7px 6px;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
     color: var(--muted);
     background: transparent;
-    border: 0;
-    border-radius: 6px;
-    text-align: left;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    text-align: center;
     font-size: 11px;
 }
 
 .nn-option svg {
-    width: 15px;
-    height: 15px;
+    width: 17px;
+    height: 17px;
     flex-shrink: 0;
+}
+
+.nn-option span,
+.nn-option small {
+    display: none !important;
 }
 
 .nn-option:hover {
     color: var(--accent);
     background: var(--soft);
+    border-color: var(--border);
 }
 
-.nn-option span {
-    flex: 1;
-    min-width: 0;
-}
-
-.nn-option small {
-    padding: 3px 6px;
-    background: var(--soft);
-    border-radius: 4px;
-    font-size: 9px;
-}
-
-/* Make the Remove Password option remain usable. */
 .nn-option:disabled {
     opacity: .6;
     cursor: not-allowed;
 }
 
-/* Toast message */
+/* HOVER TOOLTIP */
+.nn-option::after {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 50;
+    width: max-content;
+    max-width: 200px;
+    padding: 7px 10px;
+    color: #fff;
+    background: #263448;
+    border-radius: 5px;
+    content: "";
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-3px);
+    transition: opacity .15s, transform .15s, visibility .15s;
+}
+
+.nn-option:hover::after,
+.nn-option:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* NOTE ACTIONS: Download, Copy link, Share */
+.nn-option-group:first-of-type .nn-option:nth-of-type(1)::after {
+    content: "Download as .txt";
+}
+
+.nn-option-group:first-of-type .nn-option:nth-of-type(2)::after {
+    content: "Copy note link";
+}
+
+.nn-option-group:first-of-type .nn-option:nth-of-type(3)::after {
+    content: "Share note";
+}
+
+/* PRIVACY & URL: password, remove password, URL */
+.nn-option-group:nth-of-type(2) .nn-option:nth-of-type(1)::after {
+    content: "Set / Change note password";
+}
+
+.nn-option-group:nth-of-type(2) .nn-option:nth-of-type(2)::after {
+    content: "Remove password";
+}
+
+.nn-option-group:nth-of-type(2) .nn-option:last-of-type::after {
+    content: "Change note URL";
+}
+
+/* TOAST */
 .nn-toast {
     position: fixed;
     right: 22px;
@@ -640,23 +681,8 @@ button {
     }
 }
 
-/* RESPONSIVE DESIGN */
-@media (max-width: 950px) {
-    .nn-layout {
-        grid-template-columns: minmax(0, 1fr) 260px;
-        gap: 16px;
-    }
-
-    .nn-editor-card {
-        padding: 24px 22px 18px;
-    }
-
-    .nn-options-card {
-        padding: 17px 13px;
-    }
-}
-
-@media (max-width: 680px) {
+/* RESPONSIVE */
+@media (max-width: 640px) {
     .nn-header {
         padding: 12px 4%;
         flex-wrap: wrap;
@@ -690,7 +716,33 @@ button {
     }
 
     .nn-editor-card {
-        padding: 20px 15px 16px;
+        padding: 60px 15px 16px;
+    }
+
+    .nn-breadcrumb {
+        padding-right: 0;
+    }
+
+    .nn-options-card {
+        top: 12px;
+        right: 10px;
+        max-width: calc(100% - 20px);
+        gap: 2px;
+    }
+
+    .nn-option-group {
+        gap: 1px;
+    }
+
+    .nn-option {
+        width: 30px;
+        height: 32px;
+        min-height: 32px;
+    }
+
+    .nn-option svg {
+        width: 16px;
+        height: 16px;
     }
 
     .nn-title-input {
@@ -706,20 +758,6 @@ button {
 
     .nn-edit-time {
         margin-left: 0;
-    }
-
-    .nn-options-card {
-        display: block;
-        padding: 17px 14px;
-    }
-
-    .nn-option-group {
-        padding-top: 12px;
-    }
-
-    .nn-option {
-        min-height: 34px;
-        font-size: 11px;
     }
 
     .nn-toast {

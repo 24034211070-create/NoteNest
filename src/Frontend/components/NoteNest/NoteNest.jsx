@@ -961,7 +961,6 @@ export default function NoteNest() {
                 <section className="nn-editor-card">
                     <div className="nn-breadcrumb">
                         <span>My Notes</span><span>/</span><span>Current Note</span>
-                        {/* <span className="nn-edit-time"><Clock size={13} /> Edited recently</span> */}
                     </div>
 
                     <input
