@@ -409,6 +409,7 @@ button {
 }
 
 /* HOVER TOOLTIP */
+/* HOVER TOOLTIP */
 .nn-option::after {
     position: absolute;
     top: calc(100% + 8px);
@@ -439,7 +440,7 @@ button {
     transform: translateY(0);
 }
 
-/* NOTE ACTIONS: Download, Copy link, Share */
+/* NOTE ACTIONS */
 .nn-option-group:first-of-type .nn-option:nth-of-type(1)::after {
     content: "Download as .txt";
 }
@@ -452,7 +453,7 @@ button {
     content: "Share note";
 }
 
-/* PRIVACY & URL: password, remove password, URL */
+/* PRIVACY & URL */
 .nn-option-group:nth-of-type(2) .nn-option:nth-of-type(1)::after {
     content: "Set / Change note password";
 }
