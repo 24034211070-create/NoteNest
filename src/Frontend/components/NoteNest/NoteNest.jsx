@@ -186,9 +186,7 @@ export default function NoteNest() {
     const [unlockedTokens, setUnlockedTokens] = useState(readUnlockedTokens);
     const [showPassword, setShowPassword] = useState(false);
     const [urlInput, setUrlInput] = useState("");
-    const [searchQuery, setSearchQuery] = useState("");
 
-    // Remove Password confirmation popup
     const [showRemovePasswordConfirm, setShowRemovePasswordConfirm] = useState(false);
     const [removingPassword, setRemovingPassword] = useState(false);
 
@@ -316,13 +314,6 @@ export default function NoteNest() {
     const words = plainContent.trim() ? plainContent.trim().split(/\s+/).length : 0;
     const characters = plainContent.length;
 
-    const filteredNotes = notes.filter((note) => {
-        const query = searchQuery.trim().toLowerCase();
-        if (!query) return false;
-        return (note.title || "").toLowerCase().includes(query) ||
-            getPlainText(note.content || "").toLowerCase().includes(query);
-    });
-
     useEffect(() => {
         const safeNotes = notes.map((note) => {
             const { password, passwordHash, ...safeNote } = note;
@@ -385,7 +376,6 @@ export default function NoteNest() {
         modal
     ]);
 
-    // Keep valid unlock tokens and note content through same-tab refreshes.
     useEffect(() => {
         if (!backendLoaded) return;
 
@@ -456,23 +446,9 @@ export default function NoteNest() {
         const note = createNewNote();
         setNotes((previous) => [note, ...previous]);
         setActiveId(note.id);
-        setSearchQuery("");
         notify("New note created");
     }
 
-    function openSearchResult(note) {
-        setActiveId(note.id);
-        setSearchQuery("");
-        setPasswordInput("");
-
-        if (note.isPasswordProtected && !unlockedTokens[note.dbId || note.id]) {
-            setModal("unlock");
-        } else {
-            setModal("");
-        }
-
-        notify("Note opened");
-    }
     async function removeNote() {
         if (!activeNote || isLocked) {
             if (isLocked) notify("Delete karne se pehle note unlock karo.");
@@ -777,7 +753,6 @@ export default function NoteNest() {
         }
     }
 
-    // Popup ke Remove Password button se ye function chalega.
     async function removePassword() {
         if (!activeNote || isLocked) {
             notify("Password remove karne se pehle note unlock karo.");
@@ -925,6 +900,7 @@ export default function NoteNest() {
             );
         }
     }
+
     if (!activeNote) {
         return (
             <div className={`notenest-app ${dark ? "dark-mode" : ""}`}>
@@ -1025,12 +1001,6 @@ export default function NoteNest() {
                         <div className="nn-counts">
                             <span>{words} words</span><b>·</b><span>{characters} characters</span>
                         </div>
-                        <div className="nn-footer-actions">
-                            <button className="nn-secondary" onClick={clearText}>Clear text</button>
-                            <button className="nn-primary" onClick={saveNow} disabled={isLocked}>
-                                <Save size={16} /> Save note
-                            </button>
-                        </div>
                     </footer>
                 </section>
 
@@ -1038,76 +1008,6 @@ export default function NoteNest() {
                     <div className="nn-panel-title">
                         <div><h2>Note options</h2><p>Manage your writing space</p></div>
                         <Settings2 size={19} />
-                    </div>
-
-                    <button className="nn-new-note" onClick={addNote}>
-                        <Plus size={17} /> New note
-                    </button>
-
-                    <div className="nn-search-box">
-                        <label className="nn-search-label" htmlFor="nn-note-search">SEARCH NOTES</label>
-                        <div className="nn-search-input-wrap">
-                            <Search size={17} />
-                            <input
-                                id="nn-note-search"
-                                type="search"
-                                value={searchQuery}
-                                onChange={(event) => setSearchQuery(event.target.value)}
-                                placeholder="Search title or content..."
-                                autoComplete="off"
-                            />
-                            {searchQuery && (
-                                <button
-                                    type="button"
-                                    className="nn-search-clear"
-                                    onClick={() => setSearchQuery("")}
-                                    aria-label="Clear search"
-                                    title="Clear search"
-                                >
-                                    <X size={15} />
-                                </button>
-                            )}
-                        </div>
-
-                        {searchQuery.trim() && (
-                            <div className="nn-search-results">
-                                <p className="nn-search-heading">
-                                    {filteredNotes.length} {filteredNotes.length === 1 ? "result" : "results"} found
-                                </p>
-                                {filteredNotes.length > 0 ? (
-                                    filteredNotes.map((note) => {
-                                        const snippet = note.isPasswordProtected
-                                            ? ""
-                                            : getPlainText(note.content || "").replace(/\s+/g, " ").trim();
-
-                                        return (
-                                            <button
-                                                key={note.id}
-                                                type="button"
-                                                className={`nn-search-result ${note.id === activeNote.id ? "active" : ""}`}
-                                                onClick={() => openSearchResult(note)}
-                                            >
-                                                <span className="nn-search-result-icon"><FileText size={16} /></span>
-                                                <span className="nn-search-result-text">
-                                                    <strong>{note.title || "Untitled Note"}</strong>
-                                                    <small>
-                                                        {snippet
-                                                            ? `${snippet.slice(0, 85)}${snippet.length > 85 ? "..." : ""}`
-                                                            : "No content yet"}
-                                                    </small>
-                                                </span>
-                                            </button>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="nn-search-empty">
-                                        <Search size={20} />
-                                        <span>No matching notes found.</span>
-                                        <small>Try another title or keyword.</small>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
 
                     <div className="nn-option-group">
@@ -1121,9 +1021,6 @@ export default function NoteNest() {
                         <button className="nn-option" onClick={shareNote}>
                             <Share2 size={17} /><span>Share note</span>
                         </button>
-                        <button className="nn-option" onClick={removeNote}>
-                            <Trash2 size={17} /><span>Delete note</span>
-                        </button>
                     </div>
 
                     <div className="nn-option-group">
@@ -1131,7 +1028,6 @@ export default function NoteNest() {
                         <button className="nn-option" onClick={togglePrivacy}>
                             {activeNote.isPublic ? <Eye size={17} /> : <EyeOff size={17} />}
                             <span>{activeNote.isPublic ? "Public note" : "Private note"}</span>
-                            <small>{activeNote.isPublic ? "Public" : "Private"}</small>
                         </button>
                         <button
                             className="nn-option"
@@ -1150,8 +1046,6 @@ export default function NoteNest() {
                             <LockKeyhole size={17} />
                             <span>{activeNote.isPasswordProtected ? "Change note password" : "Set note password"}</span>
                         </button>
-
-
 
                         {activeNote.isPasswordProtected && (
                             <button
@@ -1180,21 +1074,6 @@ export default function NoteNest() {
                         >
                             <Link2 size={17} /><span>Change note URL</span>
                         </button>
-                    </div>
-
-                    <div className="nn-stats">
-                        <h3><FileText size={16} /> Note statistics</h3>
-                        <div><span>Words</span><strong>{words}</strong></div>
-                        <div><span>Characters</span><strong>{characters}</strong></div>
-                        <div><span>All notes</span><strong>{notes.length}</strong></div>
-                    </div>
-
-                    <div className="nn-tip">
-                        <BookOpen size={18} />
-                        <div>
-                            <strong>Your thoughts, your space.</strong>
-                            <p>Notes are currently stored in this browser.</p>
-                        </div>
                     </div>
                 </aside>
             </main>

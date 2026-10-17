@@ -46,12 +46,12 @@ button {
 }
 
 .nn-header {
-    min-height: 76px;
-    padding: 14px 5%;
+    min-height: 70px;
+    padding: 12px 5%;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 22px;
+    gap: 18px;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
 }
@@ -59,11 +59,11 @@ button {
 .nn-brand {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 9px;
     color: var(--text);
-    font-size: 22px;
+    font-size: 21px;
     font-weight: 760;
-    letter-spacing: -.8px;
+    letter-spacing: -.7px;
     text-decoration: none;
     white-space: nowrap;
 }
@@ -75,19 +75,19 @@ button {
 .nn-brand-icon {
     display: grid;
     place-items: center;
-    width: 39px;
-    height: 39px;
+    width: 36px;
+    height: 36px;
     color: #fff;
     background: var(--accent);
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .nn-saved {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
@@ -101,20 +101,20 @@ button {
 .nn-header-actions {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .nn-url-pill {
     max-width: 300px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 12px;
+    gap: 7px;
+    padding: 9px 10px;
     color: var(--muted);
     background: var(--soft);
     border: 1px solid var(--border);
-    border-radius: 9px;
-    font-size: 12px;
+    border-radius: 8px;
+    font-size: 11px;
 }
 
 .nn-url-pill span {
@@ -126,8 +126,8 @@ button {
 .nn-icon-btn {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     flex-shrink: 0;
     color: var(--muted);
     background: transparent;
@@ -142,11 +142,11 @@ button {
 
 .nn-layout {
     width: min(1320px, 92%);
-    margin: 36px auto 55px;
+    margin: 30px auto 45px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 305px;
+    grid-template-columns: minmax(0, 1fr) 285px;
     align-items: start;
-    gap: 25px;
+    gap: 22px;
 }
 
 .nn-editor-card,
@@ -154,21 +154,21 @@ button {
     min-width: 0;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 15px;
-    box-shadow: 0 7px 26px rgba(31, 49, 76, .035);
+    border-radius: 13px;
+    box-shadow: 0 5px 22px rgba(31, 49, 76, .03);
 }
 
 .nn-editor-card {
-    padding: 30px 36px 22px;
+    padding: 27px 32px 20px;
 }
 
 .nn-breadcrumb {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 9px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .nn-edit-time {
@@ -180,15 +180,15 @@ button {
 
 .nn-title-input {
     width: 100%;
-    margin: 26px 0 20px;
+    margin: 23px 0 18px;
     padding: 0;
     color: var(--text);
     background: transparent;
     border: 0;
     outline: none;
-    font-size: clamp(25px, 3vw, 35px);
+    font-size: clamp(24px, 3vw, 33px);
     font-weight: 750;
-    letter-spacing: -1px;
+    letter-spacing: -.8px;
 }
 
 .nn-title-input::placeholder {
@@ -199,8 +199,8 @@ button {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 5px;
-    padding: 9px 0;
+    gap: 4px;
+    padding: 8px 0;
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
 }
@@ -208,12 +208,12 @@ button {
 .nn-toolbar button {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 33px;
+    width: 32px;
+    height: 31px;
     color: var(--muted);
     background: transparent;
     border: 0;
-    border-radius: 7px;
+    border-radius: 6px;
 }
 
 .nn-toolbar button:hover {
@@ -223,17 +223,17 @@ button {
 
 .nn-toolbar>span {
     width: 1px;
-    height: 21px;
-    margin: 0 7px;
+    height: 19px;
+    margin: 0 6px;
     background: var(--border);
 }
 
 .nn-writing-area {
     min-height: 425px;
-    padding: 25px 0;
+    padding: 22px 0;
     color: var(--text);
-    font-size: 15px;
-    line-height: 1.95;
+    font-size: 14px;
+    line-height: 1.85;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
     outline: none;
@@ -248,38 +248,39 @@ button {
 
 .nn-writing-area ul,
 .nn-writing-area ol {
-    padding-left: 25px;
+    padding-left: 24px;
 }
 
 .nn-writing-area:focus {
     outline: none;
 }
 
+/* Hide only the requested Save Note and Clear Text buttons. */
+.nn-editor-footer .nn-footer-actions {
+    display: none !important;
+}
+
+/* Keep the word and character counts visible. */
 .nn-editor-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
-    gap: 15px;
-    padding-top: 18px;
+    gap: 12px;
+    padding-top: 14px;
     border-top: 1px solid var(--border);
 }
 
 .nn-counts {
     display: flex;
     align-items: center;
-    gap: 9px;
+    gap: 8px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .nn-counts b {
     font-weight: 400;
-}
-
-.nn-footer-actions {
-    display: flex;
-    gap: 9px;
 }
 
 .nn-primary,
@@ -288,11 +289,11 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    min-height: 40px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 12px;
+    gap: 7px;
+    min-height: 37px;
+    padding: 9px 12px;
+    border-radius: 7px;
+    font-size: 11px;
     font-weight: 650;
     transition: background .18s, transform .18s;
 }
@@ -310,6 +311,12 @@ button {
     transform: translateY(-1px);
 }
 
+.nn-primary:disabled,
+.nn-secondary:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
 .nn-secondary {
     color: var(--muted);
     background: var(--surface);
@@ -320,261 +327,79 @@ button {
     background: var(--soft);
 }
 
+/* OPTIONS PANEL */
 .nn-options-card {
-    padding: 23px 20px;
+    padding: 19px 17px;
 }
 
 .nn-panel-title {
     display: flex;
     justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 15px;
     color: var(--muted);
 }
 
 .nn-panel-title h2 {
-    margin: 0 0 6px;
+    margin: 0 0 4px;
     color: var(--text);
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .nn-panel-title p {
     margin: 0;
-    font-size: 11px;
+    font-size: 10px;
 }
 
+/* Remove New Notes button. */
 .nn-new-note {
-    width: 100%;
-    min-height: 43px;
-    font-size: 13px;
+    display: none !important;
 }
 
-/* SEARCH NOTES */
+/* Remove Search Notes section. */
 .nn-search-box {
-    position: relative;
-    margin-top: 19px;
-    padding-bottom: 17px;
-    border-bottom: 1px solid var(--border);
+    display: none !important;
 }
 
-.nn-search-label {
-    display: block;
-    margin-bottom: 10px;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 750;
-    letter-spacing: 1.1px;
+/* Remove statistics and the information card shown in the screenshot. */
+.nn-stats,
+.nn-tip {
+    display: none !important;
 }
 
-.nn-search-input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    padding: 0 10px;
-    background: var(--soft);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    transition: border-color .2s, box-shadow .2s;
-}
-
-.nn-search-input-wrap:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(57, 120, 232, .09);
-}
-
-.nn-search-input-wrap>svg {
-    flex-shrink: 0;
-}
-
-.nn-search-input-wrap input {
-    width: 100%;
-    min-width: 0;
-    height: 42px;
-    padding: 0;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    outline: none;
-    font-size: 11px;
-}
-
-.nn-search-input-wrap input::placeholder {
-    color: var(--muted);
-    opacity: .85;
-}
-
-.nn-search-input-wrap input::-webkit-search-cancel-button {
-    display: none;
-}
-
-.nn-search-clear {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 25px;
-    height: 25px;
-    padding: 0;
-    color: var(--muted);
-    background: transparent;
-    border: 0;
-    border-radius: 6px;
-}
-
-.nn-search-clear:hover {
-    color: var(--accent);
-    background: var(--surface);
-}
-
-.nn-search-results {
-    margin-top: 12px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface);
-    animation: nn-search-appear .18s ease-out;
-}
-
-@keyframes nn-search-appear {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.nn-search-heading {
-    margin: 0;
-    padding: 11px 12px;
-    color: var(--muted);
-    background: var(--soft);
-    border-bottom: 1px solid var(--border);
-    font-size: 10px;
-    font-weight: 650;
-}
-
-.nn-search-result {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-    min-width: 0;
-    padding: 12px 10px;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    transition: background .18s;
-}
-
-.nn-search-result:last-child {
-    border-bottom: 0;
-}
-
-.nn-search-result:hover,
-.nn-search-result.active {
-    background: var(--soft);
-}
-
-.nn-search-result.active {
-    box-shadow: inset 3px 0 var(--accent);
-}
-
-.nn-search-result-icon {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 31px;
-    height: 31px;
-    color: var(--accent);
-    background: rgba(57, 120, 232, .09);
-    border-radius: 8px;
-}
-
-.nn-search-result-text {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 5px;
-    min-width: 0;
-}
-
-.nn-search-result-text strong {
-    overflow: hidden;
-    color: var(--text);
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
-
-.nn-search-result-text small {
-    display: -webkit-box;
-    overflow: hidden;
-    color: var(--muted);
-    font-size: 10px;
-    line-height: 1.6;
-    overflow-wrap: anywhere;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-}
-
-.nn-search-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 22px 12px;
-    color: var(--muted);
-    text-align: center;
-}
-
-.nn-search-empty>svg {
-    color: var(--accent);
-    opacity: .8;
-}
-
-.nn-search-empty span {
-    color: var(--text);
-    font-size: 11px;
-    font-weight: 650;
-}
-
-.nn-search-empty small {
-    font-size: 10px;
-    line-height: 1.5;
-}
-
+/* Smaller option groups and text. */
 .nn-option-group {
-    padding: 21px 0 8px;
+    padding: 14px 0 7px;
     border-bottom: 1px solid var(--border);
 }
 
 .nn-group-label {
-    margin: 0 0 10px;
+    margin: 0 0 7px;
     color: var(--muted);
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 750;
-    letter-spacing: 1.1px;
+    letter-spacing: .9px;
 }
 
 .nn-option {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 9px;
     width: 100%;
-    min-height: 41px;
-    padding: 9px 7px;
+    min-height: 35px;
+    padding: 7px 6px;
     color: var(--muted);
     background: transparent;
     border: 0;
-    border-radius: 7px;
+    border-radius: 6px;
     text-align: left;
+    font-size: 11px;
+}
+
+.nn-option svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
 }
 
 .nn-option:hover {
@@ -584,79 +409,38 @@ button {
 
 .nn-option span {
     flex: 1;
+    min-width: 0;
 }
 
 .nn-option small {
-    padding: 4px 7px;
+    padding: 3px 6px;
     background: var(--soft);
-    border-radius: 5px;
-    font-size: 10px;
+    border-radius: 4px;
+    font-size: 9px;
 }
 
-/* .nn-stats {
-    margin-top: 20px;
-    padding: 15px;
-    background: var(--soft);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-} */
-
-/* .nn-stats h3 {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 0 14px;
-    font-size: 12px;
-} */
-
-.nn-stats>div {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 11px;
-    color: var(--muted);
-    font-size: 11px;
+/* Make the Remove Password option remain usable. */
+.nn-option:disabled {
+    opacity: .6;
+    cursor: not-allowed;
 }
 
-.nn-stats strong {
-    color: var(--text);
-}
-
-.nn-tip {
-    display: flex;
-    gap: 10px;
-    margin-top: 19px;
-    padding: 12px 10px;
-    color: var(--accent);
-    background: rgba(57, 120, 232, .07);
-    border-radius: 9px;
-}
-
-.nn-tip strong {
-    color: var(--text);
-    font-size: 11px;
-}
-
-.nn-tip p {
-    margin: 5px 0 0;
-    color: var(--muted);
-    font-size: 10px;
-    line-height: 1.6;
-}
-
+/* Toast message */
 .nn-toast {
     position: fixed;
-    right: 24px;
-    bottom: 24px;
+    right: 22px;
+    bottom: 22px;
     z-index: 10001;
     display: flex;
     align-items: center;
-    gap: 9px;
-    padding: 13px 17px;
+    gap: 8px;
+    max-width: calc(100vw - 32px);
+    padding: 11px 15px;
     color: #fff;
     background: #19885f;
-    border-radius: 9px;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, .14);
-    font-size: 13px;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .14);
+    font-size: 12px;
 }
 
 /* MODALS */
@@ -669,7 +453,7 @@ button {
     justify-content: center;
     width: 100%;
     height: 100%;
-    padding: 20px;
+    padding: 18px;
     overflow-y: auto;
     background: rgba(13, 22, 35, .58);
     isolation: isolate;
@@ -680,30 +464,30 @@ button {
     display: block;
     flex: 0 0 auto;
     width: min(420px, 100%);
-    max-height: calc(100vh - 40px);
-    padding: 28px;
+    max-height: calc(100vh - 36px);
+    padding: 25px;
     overflow-y: auto;
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    box-shadow: 0 20px 70px rgba(0, 0, 0, .25);
+    border-radius: 14px;
+    box-shadow: 0 20px 65px rgba(0, 0, 0, .25);
     opacity: 1;
     visibility: visible;
 }
 
 .nn-modal-close {
     position: absolute;
-    top: 13px;
-    right: 13px;
+    top: 11px;
+    right: 11px;
     display: grid;
     place-items: center;
-    width: 33px;
-    height: 33px;
+    width: 31px;
+    height: 31px;
     color: var(--muted);
     background: transparent;
     border: 0;
-    border-radius: 7px;
+    border-radius: 6px;
 }
 
 .nn-modal-close:hover {
@@ -714,22 +498,22 @@ button {
 .nn-modal-icon {
     display: grid;
     place-items: center;
-    width: 43px;
-    height: 43px;
+    width: 40px;
+    height: 40px;
     color: var(--accent);
     background: var(--soft);
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .nn-modal h2 {
-    margin: 18px 0 8px;
+    margin: 16px 0 7px;
     color: var(--text);
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .nn-modal p {
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
     line-height: 1.7;
 }
 
@@ -737,20 +521,25 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 17px;
+    margin-top: 15px;
     padding: 0 10px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 7px;
+}
+
+.nn-password-input:focus-within {
+    border-color: var(--accent);
 }
 
 .nn-password-input input {
     width: 100%;
     min-width: 0;
-    padding: 12px 0;
+    padding: 11px 0;
     color: var(--text);
     background: transparent;
     border: 0;
     outline: 0;
+    font-size: 12px;
 }
 
 .nn-password-input button {
@@ -763,23 +552,24 @@ button {
 
 .nn-field-label {
     display: block;
-    margin: 15px 0 7px;
+    margin: 13px 0 6px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
 }
 
 .nn-modal-text-input {
     width: 100%;
-    padding: 12px;
+    padding: 11px;
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 7px;
+    font-size: 12px;
 }
 
 .nn-modal-submit {
     width: 100%;
-    margin-top: 17px;
+    margin-top: 15px;
 }
 
 .nn-empty {
@@ -788,7 +578,7 @@ button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 16px;
+    gap: 15px;
     color: var(--accent);
 }
 
@@ -807,16 +597,16 @@ button {
 .nn-remove-password-modal .nn-confirm-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 24px;
+    gap: 9px;
+    margin-top: 22px;
     flex-wrap: wrap;
 }
 
 .nn-remove-password-modal .nn-confirm-actions button {
-    min-height: 42px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font: inherit;
+    min-height: 39px;
+    padding: 9px 13px;
+    border-radius: 7px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
 }
@@ -861,109 +651,28 @@ button {
 /* RESPONSIVE DESIGN */
 @media (max-width: 950px) {
     .nn-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr) 260px;
+        gap: 16px;
+    }
+
+    .nn-editor-card {
+        padding: 24px 22px 18px;
     }
 
     .nn-options-card {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0 18px;
-    }
-
-    .nn-panel-title,
-    .nn-new-note,
-    .nn-search-box,
-    .nn-stats,
-    .nn-tip {
-        grid-column: 1 / -1;
+        padding: 17px 13px;
     }
 }
 
 @media (max-width: 680px) {
     .nn-header {
-        padding: 14px 4%;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .nn-brand {
-        font-size: 20px;
-    }
-
-    .nn-saved {
-        order: 3;
-        width: 100%;
-    }
-
-    .nn-header-actions {
-        margin-left: auto;
-        gap: 4px;
-    }
-
-    .nn-url-pill {
-        max-width: 155px;
-    }
-
-    .nn-layout {
-        width: 94%;
-        margin: 18px auto 32px;
-        gap: 16px;
-    }
-
-    .nn-editor-card {
-        padding: 22px 17px 18px;
-    }
-
-    .nn-title-input {
-        font-size: 26px;
-    }
-
-    .nn-writing-area {
-        min-height: 340px;
-    }
-
-    .nn-edit-time {
-        margin-left: 0;
-    }
-
-    .nn-options-card {
-        display: block;
-        padding: 20px 17px;
-    }
-
-    .nn-editor-footer {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    .nn-footer-actions {
-        width: 100%;
-    }
-
-    .nn-footer-actions button {
-        flex: 1;
-    }
-
-    .nn-search-input-wrap input {
-        font-size: 12px;
-    }
-}
-
-/* 650px RESPONSIVE ADJUSTMENTS */
-@media (max-width: 650px) {
-    .nn-header {
         padding: 12px 4%;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 10px;
     }
 
     .nn-brand {
-        font-size: 20px;
-    }
-
-    .nn-brand-icon {
-        width: 35px;
-        height: 35px;
+        font-size: 19px;
     }
 
     .nn-saved {
@@ -973,84 +682,52 @@ button {
 
     .nn-header-actions {
         margin-left: auto;
-        gap: 4px;
-    }
-
-    .nn-url-pill {
-        max-width: 135px;
-        padding: 9px;
-    }
-
-    .nn-layout {
-        width: 94%;
-        margin: 18px auto 30px;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 16px;
-    }
-
-    .nn-editor-card {
-        padding: 20px 15px 17px;
-    }
-
-    .nn-breadcrumb {
-        gap: 7px;
-        font-size: 11px;
-    }
-
-    .nn-edit-time {
-        margin-left: 0;
-    }
-
-    .nn-title-input {
-        margin: 22px 0 18px;
-        font-size: 26px;
-    }
-
-    .nn-toolbar {
         gap: 3px;
     }
 
-    .nn-toolbar button {
-        width: 32px;
-        height: 32px;
+    .nn-url-pill {
+        max-width: 150px;
+        padding: 8px;
     }
 
-    .nn-toolbar>span {
-        margin: 0 3px;
+    .nn-layout {
+        width: 94%;
+        margin: 17px auto 28px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .nn-editor-card {
+        padding: 20px 15px 16px;
+    }
+
+    .nn-title-input {
+        margin: 20px 0 16px;
+        font-size: 25px;
     }
 
     .nn-writing-area {
         min-height: 320px;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.8;
     }
 
-    .nn-editor-footer {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .nn-counts {
-        flex-wrap: wrap;
-    }
-
-    .nn-footer-actions {
-        width: 100%;
-        flex-wrap: wrap;
-    }
-
-    .nn-footer-actions button {
-        flex: 1;
+    .nn-edit-time {
+        margin-left: 0;
     }
 
     .nn-options-card {
         display: block;
-        padding: 20px 15px;
+        padding: 17px 14px;
     }
 
-    .nn-search-input-wrap input {
-        font-size: 12px;
+    .nn-option-group {
+        padding-top: 12px;
+    }
+
+    .nn-option {
+        min-height: 34px;
+        font-size: 11px;
     }
 
     .nn-toast {
@@ -1058,7 +735,7 @@ button {
         bottom: 12px;
         left: 12px;
         justify-content: center;
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .nn-modal-backdrop {
@@ -1067,7 +744,7 @@ button {
 
     .nn-modal {
         max-height: calc(100vh - 24px);
-        padding: 24px 18px;
+        padding: 22px 17px;
     }
 
     .nn-remove-password-modal .nn-confirm-actions {
