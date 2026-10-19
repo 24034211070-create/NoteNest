@@ -17,7 +17,6 @@ if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
 });
-
 const prisma = new PrismaClient({ adapter });
 
 app.use(cors());
@@ -26,19 +25,14 @@ app.use(express.json({ limit: "1mb" }));
 // Password hash aur protected content ko public responses se hide karo.
 function safeNote(note) {
   const { passwordHash, ...publicNote } = note;
-
-  if (note.isPasswordProtected) {
-    publicNote.content = "";
-  }
-
+  if (note.isPasswordProtected) publicNote.content = "";
   return publicNote;
 }
 
-// Protected note ke liye valid, note-specific JWT verify karo.
+// Existing password-protected note ka access verify karo.
 function hasNoteAccess(req, noteId) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-
   if (!token) return false;
 
   try {
@@ -46,6 +40,31 @@ function hasNoteAccess(req, noteId) {
     return payload.noteId === noteId;
   } catch {
     return false;
+  }
+}
+
+// Super Admin JWT verify karo.
+function requireSuperAdmin(req, res, next) {
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+
+  if (!token) {
+    return res.status(401).json({ error: "Admin login required hai." });
+  }
+
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (payload.role !== "superadmin" || payload.tokenType !== "admin") {
+      return res.status(403).json({ error: "Admin access denied." });
+    }
+
+    req.admin = payload;
+    next();
+  } catch {
+    return res.status(401).json({
+      error: "Admin token invalid ya expire ho gaya. Dobara login karo.",
+    });
   }
 }
 
@@ -57,8 +76,55 @@ app.get("/", (req, res) => {
   res.json({ message: "NoteNest API is running!" });
 });
 
-// Notes list: protected notes ka content kabhi expose nahi hoga.
-app.get("/api/notes", async (req, res) => {
+// SUPER ADMIN LOGIN
+app.post("/api/admin/login", async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+
+    if (!adminUsername || !adminPasswordHash) {
+      console.error("Admin credentials environment mein configured nahi hain.");
+      return res.status(500).json({ error: "Admin login configure nahi hai." });
+    }
+
+    if (typeof username !== "string" || typeof password !== "string") {
+      return res.status(400).json({
+        error: "Username aur password required hain.",
+      });
+    }
+
+    const usernameMatches = username === adminUsername;
+    const passwordMatches = await bcrypt.compare(password, adminPasswordHash);
+
+    if (!usernameMatches || !passwordMatches) {
+      return res.status(401).json({ error: "Username ya password galat hai." });
+    }
+
+    const token = jwt.sign(
+      { role: "superadmin", tokenType: "admin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" },
+    );
+
+    return res.json({
+      message: "Login successful!",
+      token,
+      expiresIn: 7200,
+    });
+  } catch (error) {
+    console.error("Admin login error:", error);
+    return res.status(500).json({ error: "Login nahi ho saka." });
+  }
+});
+
+// Admin token verify karne ke liye.
+app.get("/api/admin/verify", requireSuperAdmin, (req, res) => {
+  res.json({ authenticated: true, role: "superadmin" });
+});
+
+// Super Admin ke liye notes list.
+app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
   try {
     const notes = await prisma.note.findMany({
       orderBy: { updatedAt: "desc" },
@@ -66,15 +132,44 @@ app.get("/api/notes", async (req, res) => {
 
     res.json(notes.map(safeNote));
   } catch (error) {
+    console.error("Admin fetch notes error:", error);
+    res.status(500).json({ error: "Admin notes fetch nahi ho sake." });
+  }
+});
+
+// Admin note detail: password-protected note ka content hidden rahega.
+app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
+  try {
+    const note = await findNote(req.params.id);
+
+    if (!note) {
+      return res.status(404).json({ error: "Note nahi mila." });
+    }
+
+    res.json(safeNote(note));
+  } catch (error) {
+    console.error("Admin note detail error:", error);
+    res.status(500).json({ error: "Note fetch nahi ho saka." });
+  }
+});
+
+// PUBLIC NOTES LIST
+app.get("/api/notes", async (req, res) => {
+  try {
+    const notes = await prisma.note.findMany({
+      orderBy: { updatedAt: "desc" },
+    });
+    res.json(notes.map(safeNote));
+  } catch (error) {
     console.error("Fetch notes error:", error);
     res.status(500).json({ error: "Notes fetch nahi ho sake." });
   }
 });
 
-// Create note. New notes default mein unprotected rahengi.
+// CREATE NOTE
 app.post("/api/notes", async (req, res) => {
   try {
-    const { title, content } = req.body;
+    const { title, content } = req.body || {};
 
     const note = await prisma.note.create({
       data: {
@@ -91,11 +186,11 @@ app.post("/api/notes", async (req, res) => {
   }
 });
 
-// Password set/change. Existing protected note ke liye unlock token required.
+// SET OR CHANGE NOTE PASSWORD
 app.post("/api/notes/:id/password", async (req, res) => {
   try {
     const { id } = req.params;
-    const { password, confirmPassword } = req.body;
+    const { password, confirmPassword } = req.body || {};
 
     if (typeof password !== "string" || password.length < 8) {
       return res.status(400).json({
@@ -125,10 +220,7 @@ app.post("/api/notes/:id/password", async (req, res) => {
 
     const note = await prisma.note.update({
       where: { id },
-      data: {
-        isPasswordProtected: true,
-        passwordHash,
-      },
+      data: { isPasswordProtected: true, passwordHash },
     });
 
     res.json({
@@ -141,12 +233,11 @@ app.post("/api/notes/:id/password", async (req, res) => {
   }
 });
 
-// Unlock note. Correct password par short-lived token aur content return hoga.
+// UNLOCK NOTE
 app.post("/api/notes/:id/unlock", async (req, res) => {
   try {
     const { id } = req.params;
-    const { password } = req.body;
-
+    const { password } = req.body || {};
     const note = await findNote(id);
 
     if (!note) {
@@ -175,10 +266,7 @@ app.post("/api/notes/:id/unlock", async (req, res) => {
 
     res.json({
       token,
-      note: {
-        ...safeNote(note),
-        content: note.content,
-      },
+      note: { ...safeNote(note), content: note.content },
     });
   } catch (error) {
     console.error("Unlock note error:", error);
@@ -186,12 +274,11 @@ app.post("/api/notes/:id/unlock", async (req, res) => {
   }
 });
 
-// Update note. Protected note ke liye unlock token required.
+// UPDATE NOTE
 app.put("/api/notes/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content } = req.body;
-
+    const { title, content } = req.body || {};
     const existing = await findNote(id);
 
     if (!existing) {
@@ -205,15 +292,10 @@ app.put("/api/notes/:id", async (req, res) => {
     }
 
     const data = {};
-
     if (typeof title === "string") data.title = title;
     if (typeof content === "string") data.content = content;
 
-    const note = await prisma.note.update({
-      where: { id },
-      data,
-    });
-
+    const note = await prisma.note.update({ where: { id }, data });
     res.json(safeNote(note));
   } catch (error) {
     console.error("Update note error:", error);
@@ -221,7 +303,7 @@ app.put("/api/notes/:id", async (req, res) => {
   }
 });
 
-// Password remove karne ke liye protected note unlock hona chahiye.
+// REMOVE NOTE PASSWORD
 app.delete("/api/notes/:id/password", async (req, res) => {
   try {
     const { id } = req.params;
@@ -239,23 +321,17 @@ app.delete("/api/notes/:id/password", async (req, res) => {
 
     const note = await prisma.note.update({
       where: { id },
-      data: {
-        isPasswordProtected: false,
-        passwordHash: null,
-      },
+      data: { isPasswordProtected: false, passwordHash: null },
     });
 
-    res.json({
-      message: "Note password removed.",
-      note: safeNote(note),
-    });
+    res.json({ message: "Note password removed.", note: safeNote(note) });
   } catch (error) {
     console.error("Remove password error:", error);
     res.status(500).json({ error: "Password remove nahi ho saka." });
   }
 });
 
-// Delete note. Protected note ke liye unlock token required.
+// DELETE NOTE
 app.delete("/api/notes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -272,7 +348,6 @@ app.delete("/api/notes/:id", async (req, res) => {
     }
 
     await prisma.note.delete({ where: { id } });
-
     res.json({ message: "Note successfully deleted!" });
   } catch (error) {
     console.error("Delete note error:", error);
