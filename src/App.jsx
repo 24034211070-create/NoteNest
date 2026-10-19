@@ -29,15 +29,20 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Notes load nahi ho sake.");
+        throw new Error(
+          data.error || data.message || "Notes load nahi ho sake."
+        );
       }
 
-      const loadedNotes = Array.isArray(data) ? data : data.notes || [];
+      const loadedNotes = Array.isArray(data)
+        ? data
+        : data.notes || [];
+
       setNotes(loadedNotes);
 
       setSelectedNote((current) => {
         if (!current) return null;
-        return loadedNotes.find((note) => note.id === current.id) || current;
+        return loadedNotes.find((note) => note.id === current.id) || null;
       });
     } catch (err) {
       setError(err.message || "Server se connect nahi ho paya.");
@@ -71,7 +76,9 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Note open nahi hua.");
+        throw new Error(
+          data.error || data.message || "Note open nahi hua."
+        );
       }
 
       setSelectedNote(data.note || data);
@@ -89,17 +96,26 @@ function AdminDashboard({ token, onLogout }) {
           <h1>NoteNest Admin</h1>
           <p>Super Admin Dashboard</p>
         </div>
-        <button className="admin-logout-button" onClick={onLogout}>
+
+        <button
+          className="admin-logout-button"
+          onClick={onLogout}
+        >
           Logout
         </button>
       </header>
 
-      {error && <div className="admin-dashboard-error">{error}</div>}
+      {error && (
+        <div className="admin-dashboard-error" role="alert">
+          {error}
+        </div>
+      )}
 
       <div className="admin-dashboard-layout">
         <section className="admin-panel">
           <div className="admin-notes-heading">
             <h2>All Notes ({notes.length})</h2>
+
             <button
               className="admin-refresh-button"
               onClick={loadNotes}
@@ -124,6 +140,7 @@ function AdminDashboard({ token, onLogout }) {
             >
               <strong>{note.title || "Untitled"}</strong>
               <small>ID: {note.id}</small>
+
               {note.isPasswordProtected && (
                 <span className="admin-protected-label">
                   Password Protected
@@ -143,7 +160,10 @@ function AdminDashboard({ token, onLogout }) {
           ) : (
             <>
               <h3>{selectedNote.title || "Untitled"}</h3>
-              <p className="admin-muted">Note ID: {selectedNote.id}</p>
+
+              <p className="admin-muted">
+                Note ID: {selectedNote.id}
+              </p>
 
               {selectedNote.isPasswordProtected && (
                 <p className="admin-protected-info">
@@ -152,7 +172,9 @@ function AdminDashboard({ token, onLogout }) {
               )}
 
               {openingNote ? (
-                <p className="admin-muted">Note content load ho raha hai...</p>
+                <p className="admin-muted">
+                  Note content load ho raha hai...
+                </p>
               ) : (
                 <div className="admin-note-content">
                   {selectedNote.content || "This note is empty."}
@@ -172,9 +194,11 @@ function AdminDashboard({ token, onLogout }) {
   font - family: Arial, sans - serif;
   box - sizing: border - box;
 }
+
         .admin - dashboard * {
   box- sizing: border - box;
         }
+
         .admin - dashboard - header {
   display: flex;
   justify - content: space - between;
@@ -183,14 +207,17 @@ function AdminDashboard({ token, onLogout }) {
   gap: 16px;
   margin - bottom: 24px;
 }
+
         .admin - dashboard - header h1 {
   margin: 0;
   font - size: 26px;
 }
+
         .admin - dashboard - header p {
   margin: 8px 0 0;
   color: #718096;
 }
+
         .admin - logout - button,
         .admin - refresh - button {
   padding: 10px 18px;
@@ -200,16 +227,19 @@ function AdminDashboard({ token, onLogout }) {
   color: white;
   cursor: pointer;
 }
+
         .admin - refresh - button:disabled {
   opacity: 0.65;
   cursor: wait;
 }
+
         .admin - dashboard - layout {
   display: grid;
   grid - template - columns: minmax(220px, 0.8fr) minmax(0, 1.5fr);
   gap: 20px;
   align - items: start;
 }
+
         .admin - panel {
   min - width: 0;
   padding: 18px;
@@ -217,6 +247,7 @@ function AdminDashboard({ token, onLogout }) {
   border: 1px solid #e2e8f0;
   border - radius: 10px;
 }
+
         .admin - notes - heading {
   display: flex;
   justify - content: space - between;
@@ -225,13 +256,16 @@ function AdminDashboard({ token, onLogout }) {
   gap: 10px;
   margin - bottom: 16px;
 }
+
         .admin - panel h2 {
   margin: 0 0 16px;
   font - size: 18px;
 }
+
         .admin - notes - heading h2 {
   margin: 0;
 }
+
         .admin - note - item {
   display: block;
   width: 100 %;
@@ -245,18 +279,23 @@ function AdminDashboard({ token, onLogout }) {
   color: #243047;
   cursor: pointer;
 }
+
+        .admin - note - item: hover,
         .admin - note - item.selected {
   background: #edf4ff;
   border - color: #3978e8;
 }
+
         .admin - note - item strong,
         .admin - note - item small {
   display: block;
 }
+
         .admin - note - item small {
   margin - top: 5px;
   color: #718096;
 }
+
         .admin - protected - label {
   display: inline - block;
   margin - top: 8px;
@@ -266,6 +305,7 @@ function AdminDashboard({ token, onLogout }) {
   color: #8a5a00;
   font - size: 11px;
 }
+
         .admin - protected - info {
   padding: 10px;
   border - radius: 6px;
@@ -273,19 +313,23 @@ function AdminDashboard({ token, onLogout }) {
   color: #805500;
   font - size: 13px;
 }
+
         .admin - note - details h3 {
   overflow - wrap: anywhere;
 }
+
         .admin - note - content {
   white - space: pre - wrap;
   overflow - wrap: anywhere;
   line - height: 1.7;
   color: #243047;
 }
+
         .admin - muted {
   color: #718096;
   overflow - wrap: anywhere;
 }
+
         .admin - dashboard - error {
   margin - bottom: 16px;
   padding: 12px;
@@ -294,10 +338,12 @@ function AdminDashboard({ token, onLogout }) {
   border - radius: 6px;
   overflow - wrap: anywhere;
 }
+
 @media(max - width: 640px) {
           .admin - dashboard {
     padding: 16px;
   }
+
           .admin - dashboard - layout {
     grid - template - columns: minmax(0, 1fr);
   }
@@ -308,16 +354,15 @@ function AdminDashboard({ token, onLogout }) {
 }
 
 function App() {
-  const currentPath = `/ ${window.location.pathname
-    .replace(/^\/+|\/+$/g, "")
-    .toLowerCase()
-    } `;
+  const currentPath =
+    window.location.pathname.replace(/\/+$/, "").toLowerCase() || "/";
 
   const isAdminRoute = currentPath === "/admin";
 
   const [token, setToken] = useState(
     () => sessionStorage.getItem(TOKEN_KEY) || ""
   );
+
   const [checking, setChecking] = useState(
     () => Boolean(sessionStorage.getItem(TOKEN_KEY))
   );
@@ -359,11 +404,10 @@ function App() {
     };
   }, [isAdminRoute, token, logout]);
 
-  // Sirf /admin par Admin Login/Dashboard render hoga.
   if (isAdminRoute) {
     if (checking) {
       return (
-        <div style={{ padding: "40px", textAlign: "center" }}>
+        <div style={{ padding: 40, textAlign: "center" }}>
           Checking admin session...
         </div>
       );
