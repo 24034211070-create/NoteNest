@@ -17,8 +17,8 @@ function AdminDashboard({ token, onLogout }) {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL} /admin/notes`, {
-        headers: { Authorization: `Bearer ${token} ` },
+      const response = await fetch(`${API_URL}/admin/notes`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.status === 401 || response.status === 403) {
@@ -29,15 +29,10 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Notes load nahi ho sake."
-        );
+        throw new Error(data.error || data.message || "Notes load nahi ho sake.");
       }
 
-      const loadedNotes = Array.isArray(data)
-        ? data
-        : data.notes || [];
-
+      const loadedNotes = Array.isArray(data) ? data : data.notes || [];
       setNotes(loadedNotes);
 
       setSelectedNote((current) => {
@@ -62,9 +57,9 @@ function AdminDashboard({ token, onLogout }) {
 
     try {
       const response = await fetch(
-        `${API_URL} /admin/notes / ${encodeURIComponent(note.id)} `,
+        `${API_URL}/admin/notes/${encodeURIComponent(note.id)}`,
         {
-          headers: { Authorization: `Bearer ${token} ` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -76,9 +71,7 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Note open nahi hua."
-        );
+        throw new Error(data.error || data.message || "Note open nahi hua.");
       }
 
       setSelectedNote(data.note || data);
@@ -128,8 +121,7 @@ function AdminDashboard({ token, onLogout }) {
 
           {notes.map((note) => (
             <button
-              className={`admin - note - item ${selectedNote?.id === note.id ? "selected" : ""
-                } `}
+              className={`admin-note-item ${selectedNote?.id === note.id ? "selected" : ""}`}
               key={note.id}
               onClick={() => openNote(note)}
             >
@@ -163,9 +155,7 @@ function AdminDashboard({ token, onLogout }) {
               )}
 
               {openingNote ? (
-                <p className="admin-muted">
-                  Note content load ho raha hai...
-                </p>
+                <p className="admin-muted">Note content load ho raha hai...</p>
               ) : (
                 <div className="admin-note-content">
                   {selectedNote.content || "This note is empty."}
@@ -177,146 +167,150 @@ function AdminDashboard({ token, onLogout }) {
       </div>
 
       <style>{`
-  .admin - dashboard {
-  min - height: 100vh;
-  padding: 24px;
-  background: #f3f6fc;
-  color: #243047;
-  font - family: Arial, sans - serif;
-  box - sizing: border - box;
-}
-        .admin - dashboard * {
-  box- sizing: border - box;
+        .admin-dashboard {
+          min-height: 100vh;
+          padding: 24px;
+          background: #f3f6fc;
+          color: #243047;
+          font-family: Arial, sans-serif;
+          box-sizing: border-box;
         }
-        .admin - dashboard - header {
-  display: flex;
-  justify - content: space - between;
-  align - items: center;
-  flex - wrap: wrap;
-  gap: 16px;
-  margin - bottom: 24px;
-}
-        .admin - dashboard - header h1 {
-  margin: 0;
-  font - size: 26px;
-}
-        .admin - dashboard - header p {
-  margin: 8px 0 0;
-  color: #718096;
-}
-        .admin - logout - button,
-        .admin - refresh - button {
-  padding: 10px 18px;
-  border: 0;
-  border - radius: 6px;
-  background: #3978e8;
-  color: white;
-  cursor: pointer;
-}
-        .admin - refresh - button:disabled {
-  opacity: 0.65;
-  cursor: wait;
-}
-        .admin - dashboard - layout {
-  display: grid;
-  grid - template - columns: minmax(220px, 0.8fr) minmax(0, 1.5fr);
-  gap: 20px;
-  align - items: start;
-}
-        .admin - panel {
-  min - width: 0;
-  padding: 18px;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border - radius: 10px;
-}
-        .admin - notes - heading {
-  display: flex;
-  justify - content: space - between;
-  align - items: center;
-  flex - wrap: wrap;
-  gap: 10px;
-  margin - bottom: 16px;
-}
-        .admin - panel h2 {
-  margin: 0 0 16px;
-  font - size: 18px;
-}
-        .admin - notes - heading h2 {
-  margin: 0;
-}
-        .admin - note - item {
-  display: block;
-  width: 100 %;
-  margin - bottom: 8px;
-  padding: 12px;
-  text - align: left;
-  overflow - wrap: anywhere;
-  border: 1px solid #e2e8f0;
-  border - radius: 7px;
-  background: white;
-  color: #243047;
-  cursor: pointer;
-}
-        .admin - note - item: hover,
-        .admin - note - item.selected {
-  background: #edf4ff;
-  border - color: #3978e8;
-}
-        .admin - note - item strong,
-        .admin - note - item small {
-  display: block;
-}
-        .admin - note - item small {
-  margin - top: 5px;
-  color: #718096;
-}
-        .admin - protected - label {
-  display: inline - block;
-  margin - top: 8px;
-  padding: 4px 7px;
-  border - radius: 4px;
-  background: #fff3d6;
-  color: #8a5a00;
-  font - size: 11px;
-}
-        .admin - protected - info {
-  padding: 10px;
-  border - radius: 6px;
-  background: #fff8e8;
-  color: #805500;
-  font - size: 13px;
-}
-        .admin - note - details h3 {
-  overflow - wrap: anywhere;
-}
-        .admin - note - content {
-  white - space: pre - wrap;
-  overflow - wrap: anywhere;
-  line - height: 1.7;
-  color: #243047;
-}
-        .admin - muted {
-  color: #718096;
-  overflow - wrap: anywhere;
-}
-        .admin - dashboard - error {
-  margin - bottom: 16px;
-  padding: 12px;
-  background: #fff0f0;
-  color: #bd3030;
-  border - radius: 6px;
-  overflow - wrap: anywhere;
-}
-@media(max - width: 640px) {
-          .admin - dashboard {
-    padding: 16px;
-  }
-          .admin - dashboard - layout {
-    grid - template - columns: minmax(0, 1fr);
-  }
-}
-`}</style>
+        .admin-dashboard * {
+          box-sizing: border-box;
+        }
+        .admin-dashboard-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .admin-dashboard-header h1 {
+          margin: 0;
+          font-size: 26px;
+        }
+        .admin-dashboard-header p {
+          margin: 8px 0 0;
+          color: #718096;
+        }
+        .admin-logout-button,
+        .admin-refresh-button {
+          padding: 10px 18px;
+          border: 0;
+          border-radius: 6px;
+          background: #3978e8;
+          color: white;
+          cursor: pointer;
+        }
+        .admin-logout-button:hover,
+        .admin-refresh-button:hover {
+          background: #2865cc;
+        }
+        .admin-refresh-button:disabled {
+          opacity: 0.65;
+          cursor: wait;
+        }
+        .admin-dashboard-layout {
+          display: grid;
+          grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.5fr);
+          gap: 20px;
+          align-items: start;
+        }
+        .admin-panel {
+          min-width: 0;
+          padding: 18px;
+          background: white;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+        }
+        .admin-notes-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        .admin-panel h2 {
+          margin: 0 0 16px;
+          font-size: 18px;
+        }
+        .admin-notes-heading h2 {
+          margin: 0;
+        }
+        .admin-note-item {
+          display: block;
+          width: 100%;
+          margin-bottom: 8px;
+          padding: 12px;
+          text-align: left;
+          overflow-wrap: anywhere;
+          border: 1px solid #e2e8f0;
+          border-radius: 7px;
+          background: white;
+          color: #243047;
+          cursor: pointer;
+        }
+        .admin-note-item:hover,
+        .admin-note-item.selected {
+          background: #edf4ff;
+          border-color: #3978e8;
+        }
+        .admin-note-item strong,
+        .admin-note-item small {
+          display: block;
+        }
+        .admin-note-item small {
+          margin-top: 5px;
+          color: #718096;
+        }
+        .admin-protected-label {
+          display: inline-block;
+          margin-top: 8px;
+          padding: 4px 7px;
+          border-radius: 4px;
+          background: #fff3d6;
+          color: #8a5a00;
+          font-size: 11px;
+        }
+        .admin-protected-info {
+          padding: 10px;
+          border-radius: 6px;
+          background: #fff8e8;
+          color: #805500;
+          font-size: 13px;
+        }
+        .admin-note-details h3 {
+          overflow-wrap: anywhere;
+        }
+        .admin-note-content {
+          white-space: pre-wrap;
+          overflow-wrap: anywhere;
+          line-height: 1.7;
+          color: #243047;
+        }
+        .admin-muted {
+          color: #718096;
+          overflow-wrap: anywhere;
+        }
+        .admin-dashboard-error {
+          margin-bottom: 16px;
+          padding: 12px;
+          background: #fff0f0;
+          color: #bd3030;
+          border-radius: 6px;
+          overflow-wrap: anywhere;
+        }
+        @media (max-width: 640px) {
+          .admin-dashboard {
+            padding: 16px;
+          }
+          .admin-dashboard-layout {
+            grid-template-columns: minmax(0, 1fr);
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -350,14 +344,14 @@ function App() {
 
     const verifyAdmin = async () => {
       try {
-        const response = await fetch(`${API_URL} /admin/verify`, {
+        const response = await fetch(`${API_URL}/admin/verify`, {
           method: "GET",
-          headers: { Authorization: `Bearer ${token} ` },
+          headers: { Authorization: `Bearer ${token}` },
           signal: controller.signal,
         });
 
         if (!response.ok) {
-          throw new Error(`Admin verification failed: ${response.status} `);
+          throw new Error(`Admin verification failed: ${response.status}`);
         }
 
         if (active) setChecking(false);
