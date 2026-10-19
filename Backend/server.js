@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -22,17 +21,25 @@ const prisma = new PrismaClient({ adapter });
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-// Password hash aur protected content ko public responses se hide karo.
+// PUBLIC API: passwordHash aur protected note ka content hide rakho.
 function safeNote(note) {
   const { passwordHash, ...publicNote } = note;
   if (note.isPasswordProtected) publicNote.content = "";
   return publicNote;
 }
 
-// Existing password-protected note ka access verify karo.
+// ADMIN API: Super Admin complete content dekh sakta hai,
+// lekin passwordHash kabhi response mein nahi jayega.
+function adminSafeNote(note) {
+  const { passwordHash, ...adminNote } = note;
+  return adminNote;
+}
+
+// Password-protected note access token verify karo.
 function hasNoteAccess(req, noteId) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+
   if (!token) return false;
 
   try {
@@ -49,14 +56,18 @@ function requireSuperAdmin(req, res, next) {
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
 
   if (!token) {
-    return res.status(401).json({ error: "Admin login required hai." });
+    return res.status(401).json({
+      error: "Admin login required hai.",
+    });
   }
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     if (payload.role !== "superadmin" || payload.tokenType !== "admin") {
-      return res.status(403).json({ error: "Admin access denied." });
+      return res.status(403).json({
+        error: "Admin access denied.",
+      });
     }
 
     req.admin = payload;
@@ -85,7 +96,9 @@ app.post("/api/admin/login", async (req, res) => {
 
     if (!adminUsername || !adminPasswordHash) {
       console.error("Admin credentials environment mein configured nahi hain.");
-      return res.status(500).json({ error: "Admin login configure nahi hai." });
+      return res.status(500).json({
+        error: "Admin login configure nahi hai.",
+      });
     }
 
     if (typeof username !== "string" || typeof password !== "string") {
@@ -98,7 +111,9 @@ app.post("/api/admin/login", async (req, res) => {
     const passwordMatches = await bcrypt.compare(password, adminPasswordHash);
 
     if (!usernameMatches || !passwordMatches) {
-      return res.status(401).json({ error: "Username ya password galat hai." });
+      return res.status(401).json({
+        error: "Username ya password galat hai.",
+      });
     }
 
     const token = jwt.sign(
@@ -114,55 +129,69 @@ app.post("/api/admin/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Admin login error:", error);
-    return res.status(500).json({ error: "Login nahi ho saka." });
+    return res.status(500).json({
+      error: "Login nahi ho saka.",
+    });
   }
 });
 
-// Admin token verify karne ke liye.
+// ADMIN TOKEN VERIFY
 app.get("/api/admin/verify", requireSuperAdmin, (req, res) => {
-  res.json({ authenticated: true, role: "superadmin" });
+  res.json({
+    authenticated: true,
+    role: "superadmin",
+  });
 });
 
-// Super Admin ke liye notes list.
+// SUPER ADMIN: saare notes, protected notes ke complete content ke saath.
 app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
   try {
     const notes = await prisma.note.findMany({
       orderBy: { updatedAt: "desc" },
     });
 
-    res.json(notes.map(safeNote));
+    res.json(notes.map(adminSafeNote));
   } catch (error) {
     console.error("Admin fetch notes error:", error);
-    res.status(500).json({ error: "Admin notes fetch nahi ho sake." });
+    res.status(500).json({
+      error: "Admin notes fetch nahi ho sake.",
+    });
   }
 });
 
-// Admin note detail: password-protected note ka content hidden rahega.
+// SUPER ADMIN: ek note ka complete content.
 app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   try {
     const note = await findNote(req.params.id);
 
     if (!note) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
-    res.json(safeNote(note));
+    res.json(adminSafeNote(note));
   } catch (error) {
     console.error("Admin note detail error:", error);
-    res.status(500).json({ error: "Note fetch nahi ho saka." });
+    res.status(500).json({
+      error: "Note fetch nahi ho saka.",
+    });
   }
 });
 
-// PUBLIC NOTES LIST
+// PUBLIC NOTES LIST: protected content hidden hi rahega.
 app.get("/api/notes", async (req, res) => {
   try {
     const notes = await prisma.note.findMany({
       orderBy: { updatedAt: "desc" },
     });
+
     res.json(notes.map(safeNote));
   } catch (error) {
     console.error("Fetch notes error:", error);
-    res.status(500).json({ error: "Notes fetch nahi ho sake." });
+    res.status(500).json({
+      error: "Notes fetch nahi ho sake.",
+    });
   }
 });
 
@@ -182,7 +211,9 @@ app.post("/api/notes", async (req, res) => {
     res.status(201).json(safeNote(note));
   } catch (error) {
     console.error("Create note error:", error);
-    res.status(500).json({ error: "Note save nahi ho saka." });
+    res.status(500).json({
+      error: "Note save nahi ho saka.",
+    });
   }
 });
 
@@ -207,7 +238,9 @@ app.post("/api/notes/:id/password", async (req, res) => {
     const existing = await findNote(id);
 
     if (!existing) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
     if (existing.isPasswordProtected && !hasNoteAccess(req, id)) {
@@ -220,7 +253,10 @@ app.post("/api/notes/:id/password", async (req, res) => {
 
     const note = await prisma.note.update({
       where: { id },
-      data: { isPasswordProtected: true, passwordHash },
+      data: {
+        isPasswordProtected: true,
+        passwordHash,
+      },
     });
 
     res.json({
@@ -229,7 +265,9 @@ app.post("/api/notes/:id/password", async (req, res) => {
     });
   } catch (error) {
     console.error("Set password error:", error);
-    res.status(500).json({ error: "Password set nahi ho saka." });
+    res.status(500).json({
+      error: "Password set nahi ho saka.",
+    });
   }
 });
 
@@ -241,7 +279,9 @@ app.post("/api/notes/:id/unlock", async (req, res) => {
     const note = await findNote(id);
 
     if (!note) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
     if (!note.isPasswordProtected || !note.passwordHash) {
@@ -251,13 +291,17 @@ app.post("/api/notes/:id/unlock", async (req, res) => {
     }
 
     if (typeof password !== "string") {
-      return res.status(400).json({ error: "Password required hai." });
+      return res.status(400).json({
+        error: "Password required hai.",
+      });
     }
 
     const matches = await bcrypt.compare(password, note.passwordHash);
 
     if (!matches) {
-      return res.status(401).json({ error: "Incorrect password." });
+      return res.status(401).json({
+        error: "Incorrect password.",
+      });
     }
 
     const token = jwt.sign({ noteId: note.id }, process.env.JWT_SECRET, {
@@ -270,11 +314,13 @@ app.post("/api/notes/:id/unlock", async (req, res) => {
     });
   } catch (error) {
     console.error("Unlock note error:", error);
-    res.status(500).json({ error: "Note unlock nahi ho saka." });
+    res.status(500).json({
+      error: "Note unlock nahi ho saka.",
+    });
   }
 });
 
-// UPDATE NOTE
+// UPDATE NOTE (autosave ke liye bhi)
 app.put("/api/notes/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -282,7 +328,9 @@ app.put("/api/notes/:id", async (req, res) => {
     const existing = await findNote(id);
 
     if (!existing) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
     if (existing.isPasswordProtected && !hasNoteAccess(req, id)) {
@@ -295,11 +343,17 @@ app.put("/api/notes/:id", async (req, res) => {
     if (typeof title === "string") data.title = title;
     if (typeof content === "string") data.content = content;
 
-    const note = await prisma.note.update({ where: { id }, data });
+    const note = await prisma.note.update({
+      where: { id },
+      data,
+    });
+
     res.json(safeNote(note));
   } catch (error) {
     console.error("Update note error:", error);
-    res.status(500).json({ error: "Note update nahi ho saka." });
+    res.status(500).json({
+      error: "Note update nahi ho saka.",
+    });
   }
 });
 
@@ -310,7 +364,9 @@ app.delete("/api/notes/:id/password", async (req, res) => {
     const existing = await findNote(id);
 
     if (!existing) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
     if (existing.isPasswordProtected && !hasNoteAccess(req, id)) {
@@ -321,13 +377,21 @@ app.delete("/api/notes/:id/password", async (req, res) => {
 
     const note = await prisma.note.update({
       where: { id },
-      data: { isPasswordProtected: false, passwordHash: null },
+      data: {
+        isPasswordProtected: false,
+        passwordHash: null,
+      },
     });
 
-    res.json({ message: "Note password removed.", note: safeNote(note) });
+    res.json({
+      message: "Note password removed.",
+      note: safeNote(note),
+    });
   } catch (error) {
     console.error("Remove password error:", error);
-    res.status(500).json({ error: "Password remove nahi ho saka." });
+    res.status(500).json({
+      error: "Password remove nahi ho saka.",
+    });
   }
 });
 
@@ -338,7 +402,9 @@ app.delete("/api/notes/:id", async (req, res) => {
     const existing = await findNote(id);
 
     if (!existing) {
-      return res.status(404).json({ error: "Note nahi mila." });
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
     }
 
     if (existing.isPasswordProtected && !hasNoteAccess(req, id)) {
@@ -348,10 +414,15 @@ app.delete("/api/notes/:id", async (req, res) => {
     }
 
     await prisma.note.delete({ where: { id } });
-    res.json({ message: "Note successfully deleted!" });
+
+    res.json({
+      message: "Note successfully deleted!",
+    });
   } catch (error) {
     console.error("Delete note error:", error);
-    res.status(500).json({ error: "Note delete nahi ho saka." });
+    res.status(500).json({
+      error: "Note delete nahi ho saka.",
+    });
   }
 });
 
