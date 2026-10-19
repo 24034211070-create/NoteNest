@@ -163,7 +163,9 @@ function AdminDashboard({ token, onLogout }) {
               )}
 
               {openingNote ? (
-                <p className="admin-muted">Note content load ho raha hai...</p>
+                <p className="admin-muted">
+                  Note content load ho raha hai...
+                </p>
               ) : (
                 <div className="admin-note-content">
                   {selectedNote.content || "This note is empty."}
@@ -344,20 +346,28 @@ function App() {
     }
 
     let active = true;
+    const controller = new AbortController();
 
     const verifyAdmin = async () => {
       try {
         const response = await fetch(`${API_URL} /admin/verify`, {
+          method: "GET",
           headers: { Authorization: `Bearer ${token} ` },
+          signal: controller.signal,
         });
 
         if (!response.ok) {
-          throw new Error("Admin session expired.");
+          throw new Error(`Admin verification failed: ${response.status} `);
         }
 
         if (active) setChecking(false);
-      } catch {
-        if (active) logout();
+      } catch (error) {
+        if (!active || error.name === "AbortError") return;
+
+        console.error("Admin verification error:", error);
+        sessionStorage.removeItem(TOKEN_KEY);
+        setToken("");
+        setChecking(false);
       }
     };
 
@@ -365,8 +375,9 @@ function App() {
 
     return () => {
       active = false;
+      controller.abort();
     };
-  }, [isAdminRoute, token, logout]);
+  }, [isAdminRoute, token]);
 
   if (isAdminRoute) {
     if (checking) {
