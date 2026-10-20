@@ -21,15 +21,28 @@ const prisma = new PrismaClient({ adapter });
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-// PUBLIC API: passwordHash aur protected note ka content hide rakho.
+// URL slug ko normalize karo.
+function normalizeSlug(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .normalize("NFKD")
+    .toLowerCase()
+    .trim()
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 100)
+    .replace(/-+$/g, "");
+}
+
+// PUBLIC API: passwordHash aur protected content hide rakho.
 function safeNote(note) {
   const { passwordHash, ...publicNote } = note;
   if (note.isPasswordProtected) publicNote.content = "";
   return publicNote;
 }
 
-// ADMIN API: Super Admin complete content dekh sakta hai,
-// lekin passwordHash kabhi response mein nahi jayega.
+// ADMIN API: complete note content, lekin passwordHash nahi.
 function adminSafeNote(note) {
   const { passwordHash, ...adminNote } = note;
   return adminNote;
@@ -143,7 +156,7 @@ app.get("/api/admin/verify", requireSuperAdmin, (req, res) => {
   });
 });
 
-// SUPER ADMIN: saare notes, protected notes ke complete content ke saath.
+// SUPER ADMIN: saare notes
 app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
   try {
     const notes = await prisma.note.findMany({
@@ -159,7 +172,7 @@ app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// SUPER ADMIN: ek note ka complete content.
+// SUPER ADMIN: ek note ka complete content
 app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   try {
     const note = await findNote(req.params.id);
@@ -179,7 +192,7 @@ app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// PUBLIC NOTES LIST: protected content hidden hi rahega.
+// PUBLIC NOTES LIST
 app.get("/api/notes", async (req, res) => {
   try {
     const notes = await prisma.note.findMany({
@@ -191,6 +204,57 @@ app.get("/api/notes", async (req, res) => {
     console.error("Fetch notes error:", error);
     res.status(500).json({
       error: "Notes fetch nahi ho sake.",
+    });
+  }
+});
+
+// GET NOTE BY URL SLUG.
+// Slug pehli baar open hone par blank note create hoga.
+// Wahi slug dobara open hone par existing note return hoga.
+app.get("/api/notes/by-slug/:slug", async (req, res) => {
+  try {
+    const slug = normalizeSlug(req.params.slug);
+
+    if (!slug) {
+      return res.status(400).json({
+        error: "Valid URL slug required hai.",
+      });
+    }
+
+    let note = await prisma.note.findUnique({
+      where: { slug },
+    });
+
+    if (note) {
+      return res.json(safeNote(note));
+    }
+
+    try {
+      note = await prisma.note.create({
+        data: {
+          slug,
+          title: "Untitled",
+          content: "",
+        },
+      });
+
+      return res.status(201).json(safeNote(note));
+    } catch (createError) {
+      // Agar same slug ek saath create hua, existing note return karo.
+      if (createError.code === "P2002") {
+        note = await prisma.note.findUnique({
+          where: { slug },
+        });
+
+        if (note) return res.json(safeNote(note));
+      }
+
+      throw createError;
+    }
+  } catch (error) {
+    console.error("Get/create note by slug error:", error);
+    res.status(500).json({
+      error: "URL se note fetch ya create nahi ho saka.",
     });
   }
 });
@@ -213,6 +277,62 @@ app.post("/api/notes", async (req, res) => {
     console.error("Create note error:", error);
     res.status(500).json({
       error: "Note save nahi ho saka.",
+    });
+  }
+});
+
+// CHANGE NOTE URL SLUG
+app.put("/api/notes/:id/slug", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const slug = normalizeSlug(req.body?.slug);
+
+    if (!slug) {
+      return res.status(400).json({
+        error: "Valid URL slug enter karo.",
+      });
+    }
+
+    const existing = await findNote(id);
+
+    if (!existing) {
+      return res.status(404).json({
+        error: "Note nahi mila.",
+      });
+    }
+
+    if (existing.isPasswordProtected && !hasNoteAccess(req, id)) {
+      return res.status(401).json({
+        error: "URL change karne se pehle note unlock karo.",
+      });
+    }
+
+    const slugOwner = await prisma.note.findUnique({
+      where: { slug },
+    });
+
+    if (slugOwner && slugOwner.id !== id) {
+      return res.status(409).json({
+        error: "Yeh URL pehle se kisi doosre note ko diya gaya hai.",
+      });
+    }
+
+    const note = await prisma.note.update({
+      where: { id },
+      data: { slug },
+    });
+
+    res.json(safeNote(note));
+  } catch (error) {
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "Yeh URL pehle se use ho raha hai.",
+      });
+    }
+
+    console.error("Change note slug error:", error);
+    res.status(500).json({
+      error: "Note URL change nahi ho saka.",
     });
   }
 });
