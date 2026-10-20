@@ -1,9 +1,9 @@
+
 import { useEffect, useRef, useState } from "react";
 import {
-    BookOpen, Check, Copy, Download, FileText, Link2, LockKeyhole,
-    Moon, Plus, Save, Share2, Sun, Trash2, Eye, EyeOff, Bold, Italic,
-    Underline, AlignLeft, List, ListOrdered, Type, Settings2, Clock, X,
-    Search
+    BookOpen, Check, Copy, Download, Link2, LockKeyhole,
+    Moon, Plus, Share2, Sun, Eye, EyeOff, Bold, Italic,
+    Underline, AlignLeft, List, ListOrdered, Type, Settings2, X
 } from "lucide-react";
 import "./NoteNest.css";
 import api from "../../../Api/axios";
@@ -13,6 +13,7 @@ const THEME_KEY = "notenest-theme";
 const ACTIVE_NOTE_KEY = "notenest-active-note";
 const UNLOCKED_TOKENS_KEY = "notenest-unlocked-tokens";
 const UNLOCK_SESSION_FALLBACK_MS = 30 * 60 * 1000;
+const AUTO_SAVE_DELAY = 700;
 
 function getTokenExpiry(token) {
     try {
@@ -108,7 +109,8 @@ function createNewNote() {
         content: "",
         updatedAt: Date.now(),
         isPublic: true,
-        password: ""
+        password: "",
+        isPasswordProtected: false
     };
 }
 
@@ -120,7 +122,8 @@ const initialNote = {
     content: "Welcome to your personal writing space.\n\nCapture your ideas, organize your thoughts, and keep everything that matters in one place.\n\nStart writing something amazing today!",
     updatedAt: Date.now(),
     isPublic: true,
-    password: ""
+    password: "",
+    isPasswordProtected: false
 };
 
 function readNotes() {
@@ -188,9 +191,13 @@ export default function NoteNest() {
     const [urlInput, setUrlInput] = useState("");
     const [showRemovePasswordConfirm, setShowRemovePasswordConfirm] = useState(false);
     const [removingPassword, setRemovingPassword] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const editorRef = useRef(null);
     const messageTimer = useRef(null);
+    const autoSaveTimer = useRef(null);
+    const lastSavedRef = useRef({});
+    const saveInProgressRef = useRef(false);
 
     useEffect(() => {
         let cancelled = false;
@@ -422,7 +429,10 @@ export default function NoteNest() {
     }, [unlockedTokens, notes, backendLoaded]);
 
     useEffect(() => {
-        return () => window.clearTimeout(messageTimer.current);
+        return () => {
+            window.clearTimeout(messageTimer.current);
+            window.clearTimeout(autoSaveTimer.current);
+        };
     }, []);
 
     function notify(text) {
@@ -440,6 +450,88 @@ export default function NoteNest() {
                 : note
         ));
     }
+
+    // Autosave: typing rukne ke 700ms baad current note backend par save hota hai.
+    useEffect(() => {
+        if (!backendLoaded || !activeNote || isLocked) return;
+
+        const title = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
+        const content = activeNote.content ?? "";
+        const noteLocalId = activeNote.id;
+        const snapshot = JSON.stringify({ title, content });
+        const databaseId = activeNote.dbId ||
+            (activeNote.isPersisted ? activeNote.id : null);
+
+        const savedKey = databaseId || noteLocalId;
+        if (lastSavedRef.current[savedKey] === snapshot) return;
+
+        window.clearTimeout(autoSaveTimer.current);
+
+        autoSaveTimer.current = window.setTimeout(async () => {
+            if (saveInProgressRef.current) {
+                // Save chal raha ho to naya attempt thodi der baad schedule karo.
+                autoSaveTimer.current = window.setTimeout(() => {
+                    setNotes((previous) => [...previous]);
+                }, AUTO_SAVE_DELAY);
+                return;
+            }
+
+            saveInProgressRef.current = true;
+            setSaving(true);
+
+            try {
+                const headers = activeToken
+                    ? { Authorization: `Bearer ${activeToken}` }
+                    : {};
+                const payload = { title, content };
+
+                const response = databaseId
+                    ? await api.put(`/notes/${databaseId}`, payload, { headers })
+                    : await api.post("/notes", payload);
+
+                const responseData = response.data?.note ||
+                    response.data?.data ||
+                    response.data;
+                const newDatabaseId = responseData?.id || databaseId || noteLocalId;
+                const newKey = newDatabaseId || noteLocalId;
+
+                lastSavedRef.current[newKey] = snapshot;
+
+                setNotes((previous) => previous.map((note) =>
+                    note.id === noteLocalId
+                        ? {
+                            ...note,
+                            dbId: newDatabaseId,
+                            isPersisted: true,
+                            title,
+                            content,
+                            updatedAt: responseData?.updatedAt
+                                ? new Date(responseData.updatedAt).getTime()
+                                : Date.now()
+                        }
+                        : note
+                ));
+            } catch (error) {
+                console.error("Autosave failed:", error);
+                // Retry will occur when the user edits again or manually saves.
+            } finally {
+                saveInProgressRef.current = false;
+                setSaving(false);
+            }
+        }, AUTO_SAVE_DELAY);
+
+        return () => window.clearTimeout(autoSaveTimer.current);
+    }, [
+        backendLoaded,
+        activeNote?.id,
+        activeNote?.dbId,
+        activeNote?.isPersisted,
+        activeNote?.title,
+        activeNote?.content,
+        activeNote?.isPasswordProtected,
+        activeToken,
+        isLocked
+    ]);
 
     function addNote() {
         const note = createNewNote();
@@ -525,13 +617,13 @@ export default function NoteNest() {
             (activeNote?.isPersisted ? activeNote.id : null);
 
         if (!noteId) {
-            notify("Share link banane se pehle note ko Save note se save karo.");
+            notify("Share link banane se pehle note save hone do.");
             return;
         }
 
         try {
             await navigator.clipboard.writeText(getShareUrl(noteId));
-            notify("Password-protected note link copied.");
+            notify("Note link copied.");
         } catch {
             notify("Clipboard access unavailable. Browser URL se link copy karo.");
         }
@@ -542,7 +634,7 @@ export default function NoteNest() {
             (activeNote?.isPersisted ? activeNote.id : null);
 
         if (!noteId) {
-            notify("Share karne se pehle note ko Save note se save karo.");
+            notify("Share karne se pehle note save hone do.");
             return;
         }
 
@@ -592,18 +684,17 @@ export default function NoteNest() {
         }
 
         try {
+            const currentContent = editorRef.current?.innerHTML ?? activeNote.content ?? "";
+            const currentTitle = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
             let databaseId = activeNote.dbId ||
                 (activeNote.isPersisted ? activeNote.id : null);
             const isNewNote = !databaseId;
-            const currentContent = editorRef.current?.innerHTML ?? activeNote.content ?? "";
-            const currentTitle = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
 
             if (!databaseId) {
                 const createResponse = await api.post("/notes", {
                     title: currentTitle,
                     content: currentContent
                 });
-
                 const created = createResponse.data?.note ||
                     createResponse.data?.data ||
                     createResponse.data;
@@ -653,11 +744,8 @@ export default function NoteNest() {
                 throw new Error("Backend se unlock response sahi nahi mila.");
             }
 
-            saveUnlockedNoteSession(
-                databaseId,
-                newToken,
-                returnedNote.content ?? currentContent
-            );
+            const finalContent = returnedNote.content ?? currentContent;
+            saveUnlockedNoteSession(databaseId, newToken, finalContent);
 
             setUnlockedTokens((previous) => ({
                 ...previous,
@@ -672,7 +760,7 @@ export default function NoteNest() {
                         isPersisted: true,
                         isPasswordProtected: true,
                         title: returnedNote.title || currentTitle,
-                        content: returnedNote.content ?? currentContent,
+                        content: finalContent,
                         updatedAt: returnedNote.updatedAt
                             ? new Date(returnedNote.updatedAt).getTime()
                             : Date.now(),
@@ -681,11 +769,12 @@ export default function NoteNest() {
                     : note
             ));
 
-            if (editorRef.current) {
-                editorRef.current.innerHTML = getEditorHtml(
-                    returnedNote.content ?? currentContent
-                );
-            }
+            lastSavedRef.current[databaseId] = JSON.stringify({
+                title: returnedNote.title || currentTitle,
+                content: finalContent
+            });
+
+            if (editorRef.current) editorRef.current.innerHTML = getEditorHtml(finalContent);
 
             setPasswordInput("");
             setConfirmPasswordInput("");
@@ -716,8 +805,9 @@ export default function NoteNest() {
             });
 
             const { token, note } = response.data;
+            const content = note.content || "";
 
-            saveUnlockedNoteSession(databaseId, token, note.content || "");
+            saveUnlockedNoteSession(databaseId, token, content);
 
             setUnlockedTokens((previous) => ({
                 ...previous,
@@ -728,16 +818,19 @@ export default function NoteNest() {
                 item.id === activeNote.id
                     ? {
                         ...item,
-                        content: note.content || "",
+                        content,
                         isPasswordProtected: true,
                         password: ""
                     }
                     : item
             ));
 
-            if (editorRef.current) {
-                editorRef.current.innerHTML = getEditorHtml(note.content || "");
-            }
+            if (editorRef.current) editorRef.current.innerHTML = getEditorHtml(content);
+
+            lastSavedRef.current[databaseId] = JSON.stringify({
+                title: note.title || activeNote.title || "Untitled Note",
+                content
+            });
 
             setPasswordInput("");
             setModal("");
@@ -757,45 +850,74 @@ export default function NoteNest() {
             notify("Password remove karne se pehle note unlock karo.");
             return;
         }
-
         if (removingPassword) return;
+
         setRemovingPassword(true);
 
+        const noteLocalId = activeNote.id;
+        const databaseId = activeNote.dbId || activeNote.id;
+        const currentTitle = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
+        const currentContent = editorRef.current?.innerHTML ?? activeNote.content ?? "";
+        const headers = activeToken
+            ? { Authorization: `Bearer ${activeToken}` }
+            : {};
+
         try {
-            await api.delete(`/notes/${activeDatabaseId}/password`, {
-                headers: activeToken
-                    ? { Authorization: `Bearer ${activeToken}` }
-                    : {}
-            });
+            // Pehle latest title aur content backend par save karo.
+            await api.put(`/notes/${databaseId}`, {
+                title: currentTitle,
+                content: currentContent
+            }, { headers });
+
+            // Password sirf successful content save ke baad remove hoga.
+            await api.delete(`/notes/${databaseId}/password`, { headers });
 
             setNotes((previous) => previous.map((note) =>
-                note.id === activeNote.id
-                    ? { ...note, isPasswordProtected: false, password: "" }
+                note.id === noteLocalId
+                    ? {
+                        ...note,
+                        dbId: databaseId,
+                        isPersisted: true,
+                        title: currentTitle,
+                        content: currentContent,
+                        isPasswordProtected: false,
+                        password: "",
+                        updatedAt: Date.now()
+                    }
                     : note
             ));
 
+            lastSavedRef.current[databaseId] = JSON.stringify({
+                title: currentTitle,
+                content: currentContent
+            });
+
+            if (editorRef.current) {
+                editorRef.current.innerHTML = getEditorHtml(currentContent);
+            }
+
             setUnlockedTokens((previous) => {
                 const next = { ...previous };
-                delete next[activeDatabaseId];
+                delete next[databaseId];
                 return next;
             });
 
             try {
                 const saved = readStoredUnlockSessions();
-                delete saved[activeDatabaseId];
+                delete saved[databaseId];
                 sessionStorage.setItem(UNLOCKED_TOKENS_KEY, JSON.stringify(saved));
             } catch (error) {
                 console.error("Could not clear unlock session:", error);
             }
 
             setShowRemovePasswordConfirm(false);
-            notify("Note password removed.");
+            notify("Password removed. Note content preserved.");
         } catch (error) {
             console.error("Remove password error:", error);
             notify(
                 error.response?.data?.error ||
                 error.response?.data?.message ||
-                "Password remove nahi ho saka."
+                "Password remove nahi ho saka. Note content save nahi hua ho sakta; dobara try karo."
             );
         } finally {
             setRemovingPassword(false);
@@ -863,10 +985,6 @@ export default function NoteNest() {
                 response.data?.data ||
                 response.data;
             const databaseId = responseData?.id || activeDatabaseId || activeNote.id;
-            const savedAt = responseData?.updatedAt
-                ? new Date(responseData.updatedAt).getTime()
-                : Date.now();
-
             const updatedNote = {
                 ...activeNote,
                 ...(responseData && typeof responseData === "object" ? responseData : {}),
@@ -879,23 +997,30 @@ export default function NoteNest() {
                     activeNote.isPasswordProtected || responseData?.isPasswordProtected
                 ),
                 password: "",
-                updatedAt: savedAt
+                updatedAt: responseData?.updatedAt
+                    ? new Date(responseData.updatedAt).getTime()
+                    : Date.now()
             };
 
             setNotes((previous) => previous.map((note) =>
                 note.id === activeNote.id ? updatedNote : note
             ));
 
+            lastSavedRef.current[databaseId] = JSON.stringify({
+                title: payload.title,
+                content
+            });
+
             notify(isAlreadySaved
-                ? "Notes Are Update In Database"
-                : "Notes Are Save in Database"
+                ? "Notes are updated in database"
+                : "Notes are saved in database"
             );
         } catch (error) {
             console.error("Failed to save note:", error);
             notify(
                 error.response?.data?.error ||
                 error.response?.data?.message ||
-                "Notes Are Not Save, Please Check Backend ."
+                "Notes are not saved. Please check backend."
             );
         }
     }
@@ -908,11 +1033,7 @@ export default function NoteNest() {
                         <span className="nn-brand-icon"><BookOpen size={21} /></span>
                         Note<span>Nest</span>
                     </a>
-                    <button
-                        className="nn-icon-btn"
-                        onClick={() => setDark((value) => !value)}
-                        aria-label="Toggle theme"
-                    >
+                    <button className="nn-icon-btn" onClick={() => setDark((value) => !value)} aria-label="Toggle theme">
                         {dark ? <Sun size={19} /> : <Moon size={19} />}
                     </button>
                 </header>
@@ -935,10 +1056,13 @@ export default function NoteNest() {
                     Note<span>Nest</span>
                 </a>
 
-                <div className="nn-saved"><i /> Auto-saved in this browser</div>
+                <div className="nn-saved">
+                    <i />
+                    {saving ? "Saving..." : "Autosave enabled"}
+                </div>
 
                 <div className="nn-header-actions">
-                    <button className="nn-url-pill" onClick={copyLink} title="Copy clean page URL">
+                    <button className="nn-url-pill" onClick={copyLink} title="Copy note URL">
                         <Link2 size={15} />
                         <span>{window.location.host}{window.location.pathname}</span>
                         <Copy size={14} />
@@ -946,11 +1070,7 @@ export default function NoteNest() {
                     <button className="nn-icon-btn" onClick={shareNote} title="Share note">
                         <Share2 size={18} />
                     </button>
-                    <button
-                        className="nn-icon-btn"
-                        onClick={() => setDark((value) => !value)}
-                        title="Toggle theme"
-                    >
+                    <button className="nn-icon-btn" onClick={() => setDark((value) => !value)} title="Toggle theme">
                         {dark ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 </div>
@@ -1019,6 +1139,9 @@ export default function NoteNest() {
                         <button className="nn-option" data-tooltip="Share this note with others" onClick={shareNote}>
                             <Share2 size={17} /><span>Share note</span>
                         </button>
+                        <button className="nn-option" onClick={saveNow} disabled={saving}>
+                            <Check size={17} /><span>{saving ? "Saving..." : "Save note now"}</span>
+                        </button>
                     </div>
 
                     <div className="nn-option-group">
@@ -1056,7 +1179,7 @@ export default function NoteNest() {
                                 }}
                             >
                                 <EyeOff size={17} />
-                                <span>Copy Notes URL </span>
+                                <span>Remove note password</span>
                             </button>
                         )}
 
@@ -1068,7 +1191,7 @@ export default function NoteNest() {
                                 setModal("url");
                             }}
                         >
-                            <Link2 size={17} /><span>Share Notes</span>
+                            <Link2 size={17} /><span>Change note URL</span>
                         </button>
                     </div>
                 </aside>
