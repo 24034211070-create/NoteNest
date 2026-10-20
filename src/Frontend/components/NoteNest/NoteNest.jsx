@@ -192,6 +192,7 @@ export default function NoteNest() {
     const [showRemovePasswordConfirm, setShowRemovePasswordConfirm] = useState(false);
     const [removingPassword, setRemovingPassword] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [autosaveRetry, setAutosaveRetry] = useState(0);
 
     const editorRef = useRef(null);
     const messageTimer = useRef(null);
@@ -451,7 +452,7 @@ export default function NoteNest() {
         ));
     }
 
-    // Autosave: typing rukne ke 700ms baad current note backend par save hota hai.
+    // Auto Save: debounce 700ms, retry if another save is still in progress.
     useEffect(() => {
         if (!backendLoaded || !activeNote || isLocked) return;
 
@@ -461,18 +462,16 @@ export default function NoteNest() {
         const snapshot = JSON.stringify({ title, content });
         const databaseId = activeNote.dbId ||
             (activeNote.isPersisted ? activeNote.id : null);
-
         const savedKey = databaseId || noteLocalId;
+
         if (lastSavedRef.current[savedKey] === snapshot) return;
 
         window.clearTimeout(autoSaveTimer.current);
 
         autoSaveTimer.current = window.setTimeout(async () => {
             if (saveInProgressRef.current) {
-                // Save chal raha ho to naya attempt thodi der baad schedule karo.
-                autoSaveTimer.current = window.setTimeout(() => {
-                    setNotes((previous) => [...previous]);
-                }, AUTO_SAVE_DELAY);
+                // Retry by changing a dependency so the effect runs again.
+                setAutosaveRetry((value) => value + 1);
                 return;
             }
 
@@ -496,24 +495,33 @@ export default function NoteNest() {
                 const newKey = newDatabaseId || noteLocalId;
 
                 lastSavedRef.current[newKey] = snapshot;
+                lastSavedRef.current[noteLocalId] = snapshot;
 
-                setNotes((previous) => previous.map((note) =>
-                    note.id === noteLocalId
-                        ? {
-                            ...note,
-                            dbId: newDatabaseId,
-                            isPersisted: true,
-                            title,
-                            content,
-                            updatedAt: responseData?.updatedAt
-                                ? new Date(responseData.updatedAt).getTime()
-                                : Date.now()
-                        }
-                        : note
-                ));
+                // Don't overwrite newer typing if the user edited during the request.
+                setNotes((previous) => previous.map((note) => {
+                    if (note.id !== noteLocalId) return note;
+
+                    const latestSnapshot = JSON.stringify({
+                        title: (note.title || "Untitled Note").trim() || "Untitled Note",
+                        content: note.content ?? ""
+                    });
+
+                    return {
+                        ...note,
+                        dbId: newDatabaseId,
+                        isPersisted: true,
+                        updatedAt: responseData?.updatedAt
+                            ? new Date(responseData.updatedAt).getTime()
+                            : Date.now(),
+                        ...(latestSnapshot === snapshot ? { title, content } : {})
+                    };
+                }));
             } catch (error) {
                 console.error("Autosave failed:", error);
-                // Retry will occur when the user edits again or manually saves.
+                // Retry after a short delay even if the user doesn't type again.
+                autoSaveTimer.current = window.setTimeout(() => {
+                    setAutosaveRetry((value) => value + 1);
+                }, AUTO_SAVE_DELAY);
             } finally {
                 saveInProgressRef.current = false;
                 setSaving(false);
@@ -530,7 +538,8 @@ export default function NoteNest() {
         activeNote?.content,
         activeNote?.isPasswordProtected,
         activeToken,
-        isLocked
+        isLocked,
+        autosaveRetry
     ]);
 
     function addNote() {
@@ -575,6 +584,9 @@ export default function NoteNest() {
             delete next[activeDatabaseId];
             return next;
         });
+
+        delete lastSavedRef.current[activeDatabaseId];
+        delete lastSavedRef.current[activeNote.id];
 
         notify("Note deleted");
     }
@@ -773,6 +785,7 @@ export default function NoteNest() {
                 title: returnedNote.title || currentTitle,
                 content: finalContent
             });
+            lastSavedRef.current[activeNote.id] = lastSavedRef.current[databaseId];
 
             if (editorRef.current) editorRef.current.innerHTML = getEditorHtml(finalContent);
 
@@ -831,6 +844,7 @@ export default function NoteNest() {
                 title: note.title || activeNote.title || "Untitled Note",
                 content
             });
+            lastSavedRef.current[activeNote.id] = lastSavedRef.current[databaseId];
 
             setPasswordInput("");
             setModal("");
@@ -863,14 +877,21 @@ export default function NoteNest() {
             : {};
 
         try {
-            // Pehle latest title aur content backend par save karo.
+            // Save the latest content before removing protection.
             await api.put(`/notes/${databaseId}`, {
                 title: currentTitle,
                 content: currentContent
             }, { headers });
 
-            // Password sirf successful content save ke baad remove hoga.
             await api.delete(`/notes/${databaseId}/password`, { headers });
+
+            const savedSnapshot = JSON.stringify({
+                title: currentTitle,
+                content: currentContent
+            });
+
+            lastSavedRef.current[databaseId] = savedSnapshot;
+            lastSavedRef.current[noteLocalId] = savedSnapshot;
 
             setNotes((previous) => previous.map((note) =>
                 note.id === noteLocalId
@@ -886,11 +907,6 @@ export default function NoteNest() {
                     }
                     : note
             ));
-
-            lastSavedRef.current[databaseId] = JSON.stringify({
-                title: currentTitle,
-                content: currentContent
-            });
 
             if (editorRef.current) {
                 editorRef.current.innerHTML = getEditorHtml(currentContent);
@@ -1006,10 +1022,12 @@ export default function NoteNest() {
                 note.id === activeNote.id ? updatedNote : note
             ));
 
-            lastSavedRef.current[databaseId] = JSON.stringify({
+            const savedSnapshot = JSON.stringify({
                 title: payload.title,
                 content
             });
+            lastSavedRef.current[databaseId] = savedSnapshot;
+            lastSavedRef.current[activeNote.id] = savedSnapshot;
 
             notify(isAlreadySaved
                 ? "Notes are updated in database"
