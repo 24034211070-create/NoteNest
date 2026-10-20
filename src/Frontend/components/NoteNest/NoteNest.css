@@ -8,18 +8,27 @@
     box-sizing: border-box;
 }
 
+html {
+    min-width: 320px;
+}
+
 body {
     margin: 0;
     min-width: 320px;
 }
 
 button,
-input {
+input,
+textarea {
     font: inherit;
 }
 
 button {
     cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
 }
 
 .notenest-app {
@@ -33,6 +42,7 @@ button {
     min-height: 100vh;
     color: var(--text);
     background: var(--page);
+    transition: color .2s, background .2s;
 }
 
 .notenest-app.dark-mode {
@@ -43,6 +53,13 @@ button {
     --border: #2d394a;
     --soft: #202c3c;
     --accent: #78a5ff;
+}
+
+.notenest-app button:focus-visible,
+.notenest-app input:focus-visible,
+.notenest-app textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
 }
 
 .nn-header {
@@ -77,6 +94,7 @@ button {
     place-items: center;
     width: 36px;
     height: 36px;
+    flex-shrink: 0;
     color: #fff;
     background: var(--accent);
     border-radius: 10px;
@@ -94,6 +112,7 @@ button {
 .nn-saved i {
     width: 7px;
     height: 7px;
+    flex-shrink: 0;
     background: #25b47a;
     border-radius: 50%;
 }
@@ -106,6 +125,7 @@ button {
 
 .nn-url-pill {
     max-width: 300px;
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 7px;
@@ -118,6 +138,7 @@ button {
 }
 
 .nn-url-pill span {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -133,6 +154,7 @@ button {
     background: transparent;
     border: 0;
     border-radius: 8px;
+    transition: color .18s, background .18s;
 }
 
 .nn-icon-btn:hover {
@@ -141,6 +163,7 @@ button {
 }
 
 /* MAIN LAYOUT */
+
 .nn-layout {
     position: relative;
     width: min(1320px, 92%);
@@ -162,6 +185,7 @@ button {
 
 .nn-editor-card {
     position: relative;
+    min-height: 500px;
     height: 650px;
     padding: 27px 32px 20px;
     display: flex;
@@ -181,6 +205,7 @@ button {
 
 .nn-title-input {
     width: 100%;
+    min-width: 0;
     margin: 23px 0 18px;
     padding: 0;
     color: var(--text);
@@ -211,10 +236,12 @@ button {
     place-items: center;
     width: 32px;
     height: 31px;
+    flex-shrink: 0;
     color: var(--muted);
     background: transparent;
     border: 0;
     border-radius: 6px;
+    transition: color .18s, background .18s;
 }
 
 .nn-toolbar button:hover {
@@ -222,10 +249,15 @@ button {
     background: var(--soft);
 }
 
+.nn-toolbar button:disabled {
+    opacity: .5;
+}
+
 .nn-toolbar>span {
     width: 1px;
     height: 19px;
     margin: 0 6px;
+    flex-shrink: 0;
     background: var(--border);
 }
 
@@ -235,6 +267,7 @@ button {
     overflow-y: auto;
     padding: 22px 0;
     color: var(--text);
+    background: transparent;
     font-size: 14px;
     line-height: 1.85;
     white-space: pre-wrap;
@@ -258,7 +291,12 @@ button {
     outline: none;
 }
 
+.nn-writing-area[contenteditable="false"] {
+    cursor: default;
+}
+
 /* EDITOR FOOTER */
+
 .nn-editor-footer .nn-footer-actions {
     display: none !important;
 }
@@ -276,6 +314,7 @@ button {
 .nn-counts {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     color: var(--muted);
     font-size: 11px;
@@ -297,7 +336,7 @@ button {
     border-radius: 7px;
     font-size: 11px;
     font-weight: 650;
-    transition: background .18s, transform .18s;
+    transition: background .18s, transform .18s, border-color .18s;
 }
 
 .nn-primary,
@@ -317,6 +356,7 @@ button {
 .nn-secondary:disabled {
     opacity: .6;
     cursor: not-allowed;
+    transform: none;
 }
 
 .nn-secondary {
@@ -326,10 +366,12 @@ button {
 }
 
 .nn-secondary:hover {
+    color: var(--text);
     background: var(--soft);
 }
 
-/* OPTIONS: ICONS AT THE TOP-RIGHT */
+/* OPTIONS ICONS AT TOP-RIGHT */
+
 .nn-options-card {
     position: absolute;
     top: 12px;
@@ -384,6 +426,7 @@ button {
     border-radius: 8px;
     text-align: center;
     font-size: 11px;
+    transition: color .18s, background .18s, border-color .18s;
 }
 
 .nn-option svg {
@@ -409,6 +452,7 @@ button {
 }
 
 /* HOVER TOOLTIP */
+
 .nn-option::after {
     position: absolute;
     top: calc(100% + 8px);
@@ -440,7 +484,8 @@ button {
     transform: translateY(0);
 }
 
-/* NOTE ACTIONS */
+/* NOTE ACTION TOOLTIP LABELS */
+
 .nn-option-group:first-of-type .nn-option:nth-of-type(1)::after {
     content: "Download as .txt";
 }
@@ -453,20 +498,22 @@ button {
     content: "Share note";
 }
 
-/* PRIVACY & URL */
+/* PRIVACY AND URL TOOLTIP LABELS */
+
 .nn-option-group:nth-of-type(2) .nn-option:nth-of-type(1)::after {
-    content: "Set / Change note password";
+    content: "Download txt File";
 }
 
 .nn-option-group:nth-of-type(2) .nn-option:nth-of-type(2)::after {
-    content: "Remove password";
+    content: "Copy Note Link";
 }
 
 .nn-option-group:nth-of-type(2) .nn-option:last-of-type::after {
-    content: "Change note URL";
+    content: "Update Note";
 }
 
-/* TOAST */
+/* TOAST MESSAGE */
+
 .nn-toast {
     position: fixed;
     right: 22px;
@@ -482,9 +529,24 @@ button {
     border-radius: 8px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, .14);
     font-size: 12px;
+    overflow-wrap: anywhere;
+    animation: nn-toast-appear .2s ease-out;
 }
 
-/* MODALS */
+@keyframes nn-toast-appear {
+    from {
+        opacity: 0;
+        transform: translateY(7px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MODAL BACKDROP */
+
 .nn-modal-backdrop {
     position: fixed !important;
     inset: 0 !important;
@@ -498,7 +560,11 @@ button {
     overflow-y: auto;
     background: rgba(13, 22, 35, .58);
     isolation: isolate;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
 }
+
+/* GENERAL MODAL */
 
 .nn-modal {
     position: relative;
@@ -515,6 +581,7 @@ button {
     box-shadow: 0 20px 65px rgba(0, 0, 0, .25);
     opacity: 1;
     visibility: visible;
+    animation: nn-modal-appear .18s ease-out;
 }
 
 .nn-modal-close {
@@ -550,12 +617,14 @@ button {
     margin: 16px 0 7px;
     color: var(--text);
     font-size: 18px;
+    line-height: 1.4;
 }
 
 .nn-modal p {
     color: var(--muted);
     font-size: 11px;
     line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
 .nn-password-input {
@@ -583,12 +652,21 @@ button {
     font-size: 12px;
 }
 
+.nn-password-input input:focus-visible {
+    outline: none;
+}
+
 .nn-password-input button {
     display: grid;
     place-items: center;
+    flex-shrink: 0;
     color: var(--muted);
     background: transparent;
     border: 0;
+}
+
+.nn-password-input button:hover {
+    color: var(--accent);
 }
 
 .nn-field-label {
@@ -600,12 +678,18 @@ button {
 
 .nn-modal-text-input {
     width: 100%;
+    min-width: 0;
     padding: 11px;
     color: var(--text);
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 7px;
+    outline: none;
     font-size: 12px;
+}
+
+.nn-modal-text-input:focus {
+    border-color: var(--accent);
 }
 
 .nn-modal-submit {
@@ -621,13 +705,22 @@ button {
     justify-content: center;
     gap: 15px;
     color: var(--accent);
+    text-align: center;
+    padding: 24px;
 }
 
 .nn-empty h2 {
     color: var(--text);
 }
 
+.nn-empty p {
+    max-width: 420px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
 /* REMOVE PASSWORD CONFIRMATION */
+
 .nn-remove-password-modal {
     width: min(440px, 100%);
     min-height: 0;
@@ -665,6 +758,7 @@ button {
 
 .nn-remove-password-modal .nn-danger-btn:hover:not(:disabled) {
     background: #b91c1c;
+    border-color: #b91c1c;
 }
 
 .nn-remove-password-modal .nn-secondary {
@@ -689,7 +783,27 @@ button {
     }
 }
 
-/* RESPONSIVE */
+/* SCROLLBARS */
+
+.nn-writing-area,
+.nn-modal {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.nn-writing-area::-webkit-scrollbar,
+.nn-modal::-webkit-scrollbar {
+    width: 6px;
+}
+
+.nn-writing-area::-webkit-scrollbar-thumb,
+.nn-modal::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 10px;
+}
+
+/* RESPONSIVE: SINGLE 640PX BREAKPOINT */
+
 @media (max-width: 640px) {
     .nn-header {
         padding: 12px 4%;
@@ -699,6 +813,11 @@ button {
 
     .nn-brand {
         font-size: 19px;
+    }
+
+    .nn-brand-icon {
+        width: 33px;
+        height: 33px;
     }
 
     .nn-saved {
@@ -724,6 +843,8 @@ button {
     }
 
     .nn-editor-card {
+        height: min(700px, calc(100vh - 125px));
+        min-height: 470px;
         padding: 60px 15px 16px;
     }
 
@@ -758,8 +879,22 @@ button {
         font-size: 25px;
     }
 
+    .nn-toolbar {
+        gap: 2px;
+    }
+
+    .nn-toolbar button {
+        width: 30px;
+        height: 30px;
+    }
+
+    .nn-toolbar>span {
+        margin: 0 3px;
+    }
+
     .nn-writing-area {
-        min-height: 320px;
+        min-height: 0;
+        padding: 18px 0;
         font-size: 13px;
         line-height: 1.8;
     }

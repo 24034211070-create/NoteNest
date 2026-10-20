@@ -1221,32 +1221,73 @@ export default function NoteNest() {
                     </footer>
                 </section>
 
+
                 <aside className="nn-options-card">
                     <div className="nn-panel-title">
-                        <div><h2>Note options</h2><p>Manage your writing space</p></div>
+                        <div>
+                            <h2>Note options</h2>
+                            <p>Manage your writing space</p>
+                        </div>
                         <Settings2 size={19} />
                     </div>
 
                     <div className="nn-option-group">
                         <p className="nn-group-label">NOTE ACTIONS</p>
-                        <button className="nn-option" data-tooltip="Download this note as a text file" onClick={downloadNote}>
-                            <Download size={17} /><span>Download as .txt</span>
+
+                        <button
+                            type="button"
+                            className="nn-option"
+                            title="Download note as a text file"
+                            data-tooltip="Download note as a text file"
+                            onClick={downloadNote}
+                        >
+                            <Download size={17} />
+                            <span>Download note</span>
                         </button>
-                        <button className="nn-option" data-tooltip="Copy the note's shareable link" onClick={copyLink}>
-                            <Copy size={17} /><span>Copy note link</span>
+
+                        <button
+                            type="button"
+                            className="nn-option"
+                            title="Copy the note URL to clipboard"
+                            data-tooltip="Copy note URL"
+                            onClick={copyLink}
+                        >
+                            <Copy size={17} />
+                            <span>Copy note URL</span>
                         </button>
-                        <button className="nn-option" data-tooltip="Share this note with others" onClick={shareNote}>
-                            <Share2 size={17} /><span>Share note</span>
+
+                        <button
+                            type="button"
+                            className="nn-option"
+                            title="Share this note"
+                            data-tooltip="Share note using available apps"
+                            onClick={shareNote}
+                        >
+                            <Share2 size={17} />
+                            <span>Share note</span>
                         </button>
-                        <button className="nn-option" onClick={saveNow} disabled={saving}>
-                            <Check size={17} /><span>{saving ? "Saving..." : "Save note now"}</span>
+
+                        <button
+                            type="button"
+                            className="nn-option"
+                            title="Save note immediately"
+                            data-tooltip="Save current note immediately"
+                            onClick={saveNow}
+                            disabled={saving}
+                        >
+                            <Check size={17} />
+                            <span>{saving ? "Saving note..." : "Save note now"}</span>
                         </button>
                     </div>
 
                     <div className="nn-option-group">
+                        <p className="nn-group-label">SECURITY & URL</p>
+
                         <button
+                            type="button"
                             className="nn-option"
-                            data-tooltip={activeNote.isPasswordProtected ? "Change the note password" : "Protect this note with a password"}
+                            title={activeNote.isPasswordProtected ? "Change note password" : "Set note password"}
+                            data-tooltip={activeNote.isPasswordProtected ? "Change password protection" : "Protect note with a password"}
                             onClick={() => {
                                 if (activeNote.isPasswordProtected && isLocked) {
                                     setPasswordInput("");
@@ -1260,13 +1301,14 @@ export default function NoteNest() {
                             }}
                         >
                             <LockKeyhole size={17} />
-                            <span>{activeNote.isPasswordProtected ? "Change note password" : "Set note password"}</span>
+                            <span>{activeNote.isPasswordProtected ? "Change password" : "Protect with password"}</span>
                         </button>
 
                         {activeNote.isPasswordProtected && (
                             <button
                                 type="button"
                                 className="nn-option"
+                                title="Remove password protection"
                                 data-tooltip="Remove password protection from this note"
                                 disabled={removingPassword}
                                 onClick={() => {
@@ -1278,22 +1320,26 @@ export default function NoteNest() {
                                 }}
                             >
                                 <EyeOff size={17} />
-                                <span>Remove note password</span>
+                                <span>{removingPassword ? "Removing password..." : "Remove password"}</span>
                             </button>
                         )}
 
                         <button
+                            type="button"
                             className="nn-option"
-                            data-tooltip="Change this note's URL"
+                            title="Change the note URL"
+                            data-tooltip="Set a different URL for this note"
                             onClick={() => {
                                 setUrlInput(activeNote.slug || currentPathSlug || "");
                                 setModal("url");
                             }}
                         >
-                            <Link2 size={17} /><span>Change note URL</span>
+                            <Link2 size={17} />
+                            <span>Change note URL</span>
                         </button>
                     </div>
                 </aside>
+
             </main>
 
             {message && (
