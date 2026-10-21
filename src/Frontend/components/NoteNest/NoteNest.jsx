@@ -1,9 +1,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-    BookOpen, Check, Copy, Download, Link2, LockKeyhole,
-    Moon, Plus, Share2, Sun, Eye, EyeOff, Bold, Italic,
-    Underline, AlignLeft, List, ListOrdered, Type, Settings2, X
+    BookOpen, Check, Download, Link2, LockKeyhole,
+    Moon, Plus, Sun, Eye, EyeOff, Bold, Italic,
+    Underline, AlignLeft, List, ListOrdered, Type,
+    Settings2, X, Share2
 } from "lucide-react";
 import "./NoteNest.css";
 import api from "../../../Api/axios";
@@ -272,7 +273,6 @@ export default function NoteNest() {
         try {
             const response = await api.get(`/notes/by-slug/${encodeURIComponent(slug)}`);
             if (pathLoadRef.current !== requestKey) return;
-
             const serverNote = getApiNote(response.data);
             if (!serverNote?.id) throw new Error("Backend ne note ID return nahi ki.");
 
@@ -294,23 +294,14 @@ export default function NoteNest() {
             setCurrentPathSlug(note.slug || slug);
             localStorage.setItem(ACTIVE_NOTE_KEY, note.id);
 
-            if (updateUrl) {
-                window.history.pushState({}, "", `/${note.slug || slug}`);
-            }
+            if (updateUrl) window.history.pushState({}, "", `/${note.slug || slug}`);
 
-            const token = session?.token;
-            if (token) {
-                setUnlockedTokens((previous) => ({
-                    ...previous,
-                    [note.dbId]: token
-                }));
+            if (session?.token) {
+                setUnlockedTokens((previous) => ({ ...previous, [note.dbId]: session.token }));
             }
         } catch (error) {
             console.error("Failed to load URL note:", error);
-            notify(
-                error.response?.data?.error ||
-                "URL wala note load nahi ho saka. Backend connection check karo."
-            );
+            notify(error.response?.data?.error || "URL wala note load nahi ho saka. Backend connection check karo.");
         }
     }
 
@@ -325,7 +316,6 @@ export default function NoteNest() {
                 try {
                     const response = await api.get(`/notes/by-slug/${encodeURIComponent(pathSlug)}`);
                     if (cancelled) return;
-
                     const serverNote = getApiNote(response.data);
                     if (!serverNote?.id) throw new Error("Invalid note response.");
 
@@ -335,10 +325,7 @@ export default function NoteNest() {
                     const note = makeFrontendNote(serverNote, session);
 
                     setNotes((previous) => {
-                        const next = [
-                            note,
-                            ...previous.filter((item) => item.dbId !== note.dbId)
-                        ];
+                        const next = [note, ...previous.filter((item) => item.dbId !== note.dbId)];
                         storeSafeNotes(next);
                         return next;
                     });
@@ -346,17 +333,11 @@ export default function NoteNest() {
                     localStorage.setItem(ACTIVE_NOTE_KEY, note.id);
 
                     if (session?.token) {
-                        setUnlockedTokens((previous) => ({
-                            ...previous,
-                            [note.dbId]: session.token
-                        }));
+                        setUnlockedTokens((previous) => ({ ...previous, [note.dbId]: session.token }));
                     }
                 } catch (error) {
                     console.error("Failed to load URL note:", error);
-                    if (!cancelled) notify(
-                        error.response?.data?.error ||
-                        "URL wala note load nahi ho saka. Backend connection check karo."
-                    );
+                    if (!cancelled) notify(error.response?.data?.error || "URL wala note load nahi ho saka. Backend connection check karo.");
                 } finally {
                     if (!cancelled) setBackendLoaded(true);
                 }
@@ -366,7 +347,6 @@ export default function NoteNest() {
             try {
                 const response = await api.get("/notes");
                 if (cancelled) return;
-
                 const data = response.data;
                 const serverNotes = Array.isArray(data)
                     ? data
@@ -380,9 +360,7 @@ export default function NoteNest() {
                     const localNotes = readNotes();
                     setNotes(localNotes);
                     setActiveId((currentId) =>
-                        localNotes.some((note) => note.id === currentId)
-                            ? currentId
-                            : localNotes[0]?.id || ""
+                        localNotes.some((note) => note.id === currentId) ? currentId : localNotes[0]?.id || ""
                     );
                     setBackendLoaded(true);
                     return;
@@ -397,9 +375,7 @@ export default function NoteNest() {
                     (savedActiveNote?.isPersisted ? savedActiveNote.id : null);
 
                 const normalizedNotes = serverNotes.map((note) => {
-                    const session = note.isPasswordProtected
-                        ? readUnlockedNoteSession(note.id)
-                        : null;
+                    const session = note.isPasswordProtected ? readUnlockedNoteSession(note.id) : null;
                     return makeFrontendNote(note, session);
                 });
 
@@ -431,9 +407,7 @@ export default function NoteNest() {
                     const localNotes = readNotes();
                     setNotes(localNotes);
                     setActiveId((currentId) =>
-                        localNotes.some((note) => note.id === currentId)
-                            ? currentId
-                            : localNotes[0]?.id || ""
+                        localNotes.some((note) => note.id === currentId) ? currentId : localNotes[0]?.id || ""
                     );
                     setBackendLoaded(true);
                     notify("Local notes loaded; backend connection check karo.");
@@ -449,11 +423,8 @@ export default function NoteNest() {
         function handlePopState() {
             const slug = getPathSlug();
             setCurrentPathSlug(slug);
-            if (slug) {
-                loadPathNote(slug);
-            } else {
-                window.location.reload();
-            }
+            if (slug) loadPathNote(slug);
+            else window.location.reload();
         }
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
@@ -480,48 +451,32 @@ export default function NoteNest() {
             localStorage.removeItem(ACTIVE_NOTE_KEY);
             return;
         }
-
         localStorage.setItem(ACTIVE_NOTE_KEY, activeId);
         if (activeNote && editorRef.current) {
-            editorRef.current.innerHTML = getEditorHtml(
-                isLocked ? "" : (activeNote.content || "")
-            );
+            editorRef.current.innerHTML = getEditorHtml(isLocked ? "" : (activeNote.content || ""));
         }
     }, [activeId, isLocked, backendLoaded]);
 
     useEffect(() => {
         if (!backendLoaded) return;
-
         if (!activeNote?.isPasswordProtected) {
             if (modal === "unlock") setModal("");
             return;
         }
 
-        const savedSession = activeDatabaseId
-            ? readUnlockedNoteSession(activeDatabaseId)
-            : null;
+        const savedSession = activeDatabaseId ? readUnlockedNoteSession(activeDatabaseId) : null;
         const rememberedToken = activeToken || savedSession?.token;
 
         if (rememberedToken) {
             if (!activeToken && activeDatabaseId) {
-                setUnlockedTokens((previous) => ({
-                    ...previous,
-                    [activeDatabaseId]: rememberedToken
-                }));
+                setUnlockedTokens((previous) => ({ ...previous, [activeDatabaseId]: rememberedToken }));
             }
             if (modal === "unlock") setModal("");
         } else {
             setPasswordInput("");
             if (modal !== "unlock") setModal("unlock");
         }
-    }, [
-        backendLoaded,
-        activeNote?.id,
-        activeNote?.isPasswordProtected,
-        activeDatabaseId,
-        activeToken,
-        modal
-    ]);
+    }, [backendLoaded, activeNote?.id, activeNote?.isPasswordProtected, activeDatabaseId, activeToken, modal]);
 
     useEffect(() => {
         if (!backendLoaded) return;
@@ -550,8 +505,8 @@ export default function NoteNest() {
                     : Number(previousSession?.expiresAt) > Date.now()
                         ? Number(previousSession.expiresAt)
                         : Date.now() + UNLOCK_SESSION_FALLBACK_MS;
-
                 if (expiresAt <= Date.now()) continue;
+
                 const note = notes.find((item) => (item.dbId || item.id) === noteId);
                 savedTokens[noteId] = {
                     token,
@@ -559,7 +514,6 @@ export default function NoteNest() {
                     content: note ? (note.content ?? "") : (previousSession?.content ?? "")
                 };
             }
-
             sessionStorage.setItem(UNLOCKED_TOKENS_KEY, JSON.stringify(savedTokens));
         } catch (error) {
             console.error("Could not persist unlock session:", error);
@@ -576,13 +530,10 @@ export default function NoteNest() {
     function updateNote(field, value) {
         if (!activeNote || isLocked) return;
         setNotes((previous) => previous.map((note) =>
-            note.id === activeNote.id
-                ? { ...note, [field]: value, updatedAt: Date.now() }
-                : note
+            note.id === activeNote.id ? { ...note, [field]: value, updatedAt: Date.now() } : note
         ));
     }
 
-    // Debounced autosave. Path-based notes keep their existing slug.
     useEffect(() => {
         if (!backendLoaded || !activeNote || isLocked) return;
 
@@ -590,8 +541,7 @@ export default function NoteNest() {
         const content = activeNote.content ?? "";
         const localId = activeNote.id;
         const snapshot = JSON.stringify({ title, content });
-        const databaseId = activeNote.dbId ||
-            (activeNote.isPersisted ? activeNote.id : null);
+        const databaseId = activeNote.dbId || (activeNote.isPersisted ? activeNote.id : null);
         const savedKey = databaseId || localId;
 
         if (lastSavedRef.current[savedKey] === snapshot) return;
@@ -606,9 +556,7 @@ export default function NoteNest() {
             saveInProgressRef.current = true;
             setSaving(true);
             try {
-                const headers = activeToken
-                    ? { Authorization: `Bearer ${activeToken}` }
-                    : {};
+                const headers = activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
                 const payload = { title, content };
                 const response = databaseId
                     ? await api.put(`/notes/${databaseId}`, payload, { headers })
@@ -632,9 +580,7 @@ export default function NoteNest() {
                         dbId: newDatabaseId,
                         slug: saved?.slug || note.slug || null,
                         isPersisted: true,
-                        updatedAt: saved?.updatedAt
-                            ? new Date(saved.updatedAt).getTime()
-                            : Date.now(),
+                        updatedAt: saved?.updatedAt ? new Date(saved.updatedAt).getTime() : Date.now(),
                         ...(latest === snapshot ? { title, content } : {})
                     };
                 }));
@@ -651,17 +597,9 @@ export default function NoteNest() {
 
         return () => window.clearTimeout(autoSaveTimer.current);
     }, [
-        backendLoaded,
-        activeNote?.id,
-        activeNote?.dbId,
-        activeNote?.isPersisted,
-        activeNote?.title,
-        activeNote?.content,
-        activeNote?.isPasswordProtected,
-        activeNote?.slug,
-        activeToken,
-        isLocked,
-        autosaveRetry
+        backendLoaded, activeNote?.id, activeNote?.dbId, activeNote?.isPersisted,
+        activeNote?.title, activeNote?.content, activeNote?.isPasswordProtected,
+        activeNote?.slug, activeToken, isLocked, autosaveRetry
     ]);
 
     function addNote() {
@@ -708,26 +646,14 @@ export default function NoteNest() {
         notify("Note deleted");
     }
 
-    function clearText() {
-        if (isLocked) {
-            notify("Text clear karne se pehle note unlock karo.");
-            return;
-        }
-        if (!activeNote || !window.confirm("Clear all text in this note?")) return;
-        updateNote("content", "");
-        if (editorRef.current) editorRef.current.innerHTML = "";
-        notify("Note text cleared");
-    }
-
     function downloadNote() {
         if (!activeNote || isLocked) {
             if (isLocked) notify("Download karne se pehle note unlock karo.");
             return;
         }
-        const blob = new Blob(
-            [`${activeNote.title}\n\n${getPlainText(activeNote.content)}`],
-            { type: "text/plain;charset=utf-8" }
-        );
+        const blob = new Blob([`${activeNote.title}\n\n${getPlainText(activeNote.content)}`], {
+            type: "text/plain;charset=utf-8"
+        });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -750,33 +676,6 @@ export default function NoteNest() {
             notify("Note link copied.");
         } catch {
             notify("Clipboard access unavailable. Browser URL se link copy karo.");
-        }
-    }
-
-    async function shareNote() {
-        if (!activeNote) return;
-        if (!activeNote.dbId && !activeNote.slug) {
-            notify("Share karne se pehle note save hone do.");
-            return;
-        }
-        const url = getShareUrl(activeNote);
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: activeNote.title || "NoteNest",
-                    text: "A note from NoteNest",
-                    url
-                });
-            } catch {
-                // User closed the share dialog.
-            }
-        } else {
-            try {
-                await navigator.clipboard.writeText(url);
-                notify("Note link copied.");
-            } catch {
-                notify("Link copy nahi ho saka. Browser URL se copy karo.");
-            }
         }
     }
 
@@ -805,8 +704,7 @@ export default function NoteNest() {
         try {
             const content = editorRef.current?.innerHTML ?? activeNote.content ?? "";
             const title = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
-            let databaseId = activeNote.dbId ||
-                (activeNote.isPersisted ? activeNote.id : null);
+            let databaseId = activeNote.dbId || (activeNote.isPersisted ? activeNote.id : null);
             const isNewNote = !databaseId;
 
             if (!databaseId) {
@@ -840,9 +738,7 @@ export default function NoteNest() {
             });
             const newToken = unlockResponse.data?.token;
             const returnedNote = unlockResponse.data?.note;
-            if (!newToken || !returnedNote) {
-                throw new Error("Backend se unlock response sahi nahi mila.");
-            }
+            if (!newToken || !returnedNote) throw new Error("Backend se unlock response sahi nahi mila.");
 
             const finalContent = returnedNote.content ?? content;
             saveUnlockedNoteSession(databaseId, newToken, finalContent);
@@ -858,18 +754,13 @@ export default function NoteNest() {
                         isPasswordProtected: true,
                         title: returnedNote.title || title,
                         content: finalContent,
-                        updatedAt: returnedNote.updatedAt
-                            ? new Date(returnedNote.updatedAt).getTime()
-                            : Date.now(),
+                        updatedAt: returnedNote.updatedAt ? new Date(returnedNote.updatedAt).getTime() : Date.now(),
                         password: ""
                     }
                     : note
             ));
 
-            const snapshot = JSON.stringify({
-                title: returnedNote.title || title,
-                content: finalContent
-            });
+            const snapshot = JSON.stringify({ title: returnedNote.title || title, content: finalContent });
             lastSavedRef.current[databaseId] = snapshot;
             lastSavedRef.current[activeNote.id] = snapshot;
             if (editorRef.current) editorRef.current.innerHTML = getEditorHtml(finalContent);
@@ -880,12 +771,7 @@ export default function NoteNest() {
             notify("Password securely set. Note is protected.");
         } catch (error) {
             console.error("Set note password error:", error);
-            notify(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "Password set nahi ho saka."
-            );
+            notify(error.response?.data?.error || error.response?.data?.message || error.message || "Password set nahi ho saka.");
         }
     }
 
@@ -897,25 +783,18 @@ export default function NoteNest() {
 
         const databaseId = activeNote.dbId || activeNote.id;
         try {
-            const response = await api.post(`/notes/${databaseId}/unlock`, {
-                password: passwordInput
-            });
+            const response = await api.post(`/notes/${databaseId}/unlock`, { password: passwordInput });
             const { token, note } = response.data;
             const content = note.content || "";
 
             saveUnlockedNoteSession(databaseId, token, content);
             setUnlockedTokens((previous) => ({ ...previous, [databaseId]: token }));
             setNotes((previous) => previous.map((item) =>
-                item.id === activeNote.id
-                    ? { ...item, content, isPasswordProtected: true, password: "" }
-                    : item
+                item.id === activeNote.id ? { ...item, content, isPasswordProtected: true, password: "" } : item
             ));
             if (editorRef.current) editorRef.current.innerHTML = getEditorHtml(content);
 
-            const snapshot = JSON.stringify({
-                title: note.title || activeNote.title || "Untitled Note",
-                content
-            });
+            const snapshot = JSON.stringify({ title: note.title || activeNote.title || "Untitled Note", content });
             lastSavedRef.current[databaseId] = snapshot;
             lastSavedRef.current[activeNote.id] = snapshot;
             setPasswordInput("");
@@ -923,11 +802,7 @@ export default function NoteNest() {
             notify("Note unlocked successfully.");
         } catch (error) {
             console.error("Unlock note error:", error);
-            notify(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                "Incorrect password or note unlock failed."
-            );
+            notify(error.response?.data?.error || error.response?.data?.message || "Incorrect password or note unlock failed.");
         }
     }
 
@@ -987,11 +862,7 @@ export default function NoteNest() {
             notify("Password removed. Note content preserved.");
         } catch (error) {
             console.error("Remove password error:", error);
-            notify(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                "Password remove nahi ho saka. Dobara try karo."
-            );
+            notify(error.response?.data?.error || error.response?.data?.message || "Password remove nahi ho saka. Dobara try karo.");
         } finally {
             setRemovingPassword(false);
         }
@@ -1000,7 +871,6 @@ export default function NoteNest() {
     async function changeUrl() {
         if (!activeNote) return;
         const slug = normalizeSlug(urlInput);
-
         if (!slug) {
             notify("Enter a valid URL name.");
             return;
@@ -1011,10 +881,7 @@ export default function NoteNest() {
         }
 
         try {
-            let databaseId = activeNote.dbId ||
-                (activeNote.isPersisted ? activeNote.id : null);
-
-            // Ensure the note exists in the database before assigning a slug.
+            let databaseId = activeNote.dbId || (activeNote.isPersisted ? activeNote.id : null);
             if (!databaseId) {
                 const content = editorRef.current?.innerHTML ?? activeNote.content ?? "";
                 const title = (activeNote.title || "Untitled Note").trim() || "Untitled Note";
@@ -1024,21 +891,14 @@ export default function NoteNest() {
                 if (!databaseId) throw new Error("Note ID backend se nahi mila.");
             }
 
-            const headers = activeToken
-                ? { Authorization: `Bearer ${activeToken}` }
-                : {};
+            const headers = activeToken ? { Authorization: `Bearer ${activeToken}` } : {};
             const response = await api.put(`/notes/${databaseId}/slug`, { slug }, { headers });
             const saved = getApiNote(response.data);
-
             const oldId = activeNote.id;
+
             setNotes((previous) => previous.map((note) =>
                 note.id === oldId
-                    ? {
-                        ...note,
-                        dbId: databaseId,
-                        isPersisted: true,
-                        slug: saved?.slug || slug
-                    }
+                    ? { ...note, dbId: databaseId, isPersisted: true, slug: saved?.slug || slug }
                     : note
             ));
 
@@ -1049,22 +909,8 @@ export default function NoteNest() {
             notify("Note URL updated successfully.");
         } catch (error) {
             console.error("Change note URL error:", error);
-            notify(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "URL update nahi ho saka."
-            );
+            notify(error.response?.data?.error || error.response?.data?.message || error.message || "URL update nahi ho saka.");
         }
-    }
-
-    function togglePrivacy() {
-        if (!activeNote) return;
-        updateNote("isPublic", !activeNote.isPublic);
-        notify(activeNote.isPublic
-            ? "Marked private on this browser"
-            : "Marked public on this browser"
-        );
     }
 
     async function saveNow() {
@@ -1098,29 +944,19 @@ export default function NoteNest() {
                 isPersisted: true,
                 title: payload.title,
                 content,
-                isPasswordProtected: Boolean(
-                    activeNote.isPasswordProtected || saved?.isPasswordProtected
-                ),
+                isPasswordProtected: Boolean(activeNote.isPasswordProtected || saved?.isPasswordProtected),
                 password: "",
-                updatedAt: saved?.updatedAt
-                    ? new Date(saved.updatedAt).getTime()
-                    : Date.now()
+                updatedAt: saved?.updatedAt ? new Date(saved.updatedAt).getTime() : Date.now()
             };
 
-            setNotes((previous) => previous.map((note) =>
-                note.id === activeNote.id ? updatedNote : note
-            ));
+            setNotes((previous) => previous.map((note) => note.id === activeNote.id ? updatedNote : note));
             const snapshot = JSON.stringify({ title: payload.title, content });
             lastSavedRef.current[databaseId] = snapshot;
             lastSavedRef.current[activeNote.id] = snapshot;
             notify(alreadySaved ? "Notes are updated in database" : "Notes are saved in database");
         } catch (error) {
             console.error("Failed to save note:", error);
-            notify(
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                "Notes are not saved. Please check backend."
-            );
+            notify(error.response?.data?.error || error.response?.data?.message || "Notes are not saved. Please check backend.");
         }
     }
 
@@ -1164,12 +1000,36 @@ export default function NoteNest() {
                     <button className="nn-url-pill" onClick={copyLink} title="Copy note URL">
                         <Link2 size={15} />
                         <span>{window.location.host}{window.location.pathname}</span>
-                        <Copy size={14} />
                     </button>
-                    <button className="nn-icon-btn" onClick={shareNote} title="Share note">
+                    <button
+                        className="nn-icon-btn"
+                        onClick={async () => {
+                            const url = window.location.href;
+                            if (navigator.share) {
+                                try {
+                                    await navigator.share({
+                                        title: "NoteNest",
+                                        url
+                                    });
+                                } catch (error) {
+                                    if (error.name !== "AbortError") {
+                                        try {
+                                            await navigator.clipboard.writeText(url);
+                                        } catch { }
+                                    }
+                                }
+                            } else {
+                                try {
+                                    await navigator.clipboard.writeText(url);
+                                } catch { }
+                            }
+                        }}
+                        title="Share note"
+                        aria-label="Share note"
+                    >
                         <Share2 size={18} />
                     </button>
-                    <button className="nn-icon-btn" onClick={() => setDark((value) => !value)} title="Toggle theme">
+                    <button className="nn-icon-btn" onClick={() => setDark((value) => !value)} title="Toggle theme" aria-label="Toggle theme">
                         {dark ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
                 </div>
@@ -1177,29 +1037,16 @@ export default function NoteNest() {
 
             <main className="nn-layout">
                 <section className="nn-editor-card">
-                    <div className="nn-breadcrumb">
-                        <span>My Notes</span><span>/</span><span>Current Note</span>
-                    </div>
-
-                    <input
-                        className="nn-title-input"
-                        value={activeNote.title}
-                        readOnly={isLocked}
-                        onChange={(event) => updateNote("title", event.target.value)}
-                        placeholder="Give your note a title..."
-                        aria-label="Note title"
-                    />
-
-                    <div className="nn-toolbar">
-                        <button onClick={() => formatText("bold")} title="Bold"><Bold size={17} /></button>
-                        <button onClick={() => formatText("italic")} title="Italic"><Italic size={17} /></button>
-                        <button onClick={() => formatText("underline")} title="Underline"><Underline size={17} /></button>
+                    <div className="nn-toolbar" role="toolbar" aria-label="Text formatting">
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("bold")} title="Bold" aria-label="Bold" disabled={isLocked}><Bold size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("italic")} title="Italic" aria-label="Italic" disabled={isLocked}><Italic size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("underline")} title="Underline" aria-label="Underline" disabled={isLocked}><Underline size={17} /></button>
                         <span />
-                        <button onClick={() => formatText("justifyLeft")} title="Align left"><AlignLeft size={17} /></button>
-                        <button onClick={() => formatText("insertUnorderedList")} title="Bullet list"><List size={17} /></button>
-                        <button onClick={() => formatText("insertOrderedList")} title="Numbered list"><ListOrdered size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("justifyLeft")} title="Align left" aria-label="Align left" disabled={isLocked}><AlignLeft size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("insertUnorderedList")} title="Bullet list" aria-label="Bullet list" disabled={isLocked}><List size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("insertOrderedList")} title="Numbered list" aria-label="Numbered list" disabled={isLocked}><ListOrdered size={17} /></button>
                         <span />
-                        <button onClick={() => formatText("removeFormat")} title="Remove formatting"><Type size={17} /></button>
+                        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => formatText("removeFormat")} title="Remove formatting" aria-label="Remove formatting" disabled={isLocked}><Type size={17} /></button>
                     </div>
 
                     <div
@@ -1221,7 +1068,6 @@ export default function NoteNest() {
                     </footer>
                 </section>
 
-
                 <aside className="nn-options-card">
                     <div className="nn-panel-title">
                         <div>
@@ -1233,56 +1079,16 @@ export default function NoteNest() {
 
                     <div className="nn-option-group">
                         <p className="nn-group-label">NOTE ACTIONS</p>
-
-                        <button
-                            type="button"
-                            className="nn-option"
-                            title="Download note as a text file"
-                            data-tooltip="Download note as a text file"
-                            onClick={downloadNote}
-                        >
-                            <Download size={17} />
-                            <span>Download note</span>
+                        <button type="button" className="nn-option" title="Download note as a text file" data-tooltip="Download note as a text file" onClick={downloadNote}>
+                            <Download size={17} /><span>Download note</span>
                         </button>
-
-                        <button
-                            type="button"
-                            className="nn-option"
-                            title="Copy the note URL to clipboard"
-                            data-tooltip="Copy note URL"
-                            onClick={copyLink}
-                        >
-                            <Copy size={17} />
-                            <span>Copy note URL</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            className="nn-option"
-                            title="Share this note"
-                            data-tooltip="Share note using available apps"
-                            onClick={shareNote}
-                        >
-                            <Share2 size={17} />
-                            <span>Share note</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            className="nn-option"
-                            title="Save note immediately"
-                            data-tooltip="Save current note immediately"
-                            onClick={saveNow}
-                            disabled={saving}
-                        >
-                            <Check size={17} />
-                            <span>{saving ? "Saving note..." : "Save note now"}</span>
+                        <button type="button" className="nn-option" title="Save note immediately" data-tooltip="Save current note immediately" onClick={saveNow} disabled={saving}>
+                            <Check size={17} /><span>{saving ? "Saving note..." : "Save note now"}</span>
                         </button>
                     </div>
 
                     <div className="nn-option-group">
                         <p className="nn-group-label">SECURITY & URL</p>
-
                         <button
                             type="button"
                             className="nn-option"
@@ -1334,61 +1140,28 @@ export default function NoteNest() {
                                 setModal("url");
                             }}
                         >
-                            <Link2 size={17} />
-                            <span>Change note URL</span>
+                            <Link2 size={17} /><span>Change note URL</span>
                         </button>
                     </div>
                 </aside>
-
             </main>
 
-            {message && (
-                <div className="nn-toast"><Check size={16} />{message}</div>
-            )}
+            {message && <div className="nn-toast"><Check size={16} />{message}</div>}
 
             {showRemovePasswordConfirm && (
-                <div
-                    className="nn-modal-backdrop"
-                    onClick={() => {
-                        if (!removingPassword) setShowRemovePasswordConfirm(false);
-                    }}
-                >
-                    <section
-                        className="nn-modal nn-remove-password-modal"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="nn-remove-password-title"
-                        onClick={(event) => event.stopPropagation()}
-                    >
-                        <button
-                            className="nn-modal-close"
-                            onClick={() => setShowRemovePasswordConfirm(false)}
-                            disabled={removingPassword}
-                            aria-label="Close confirmation"
-                        >
+                <div className="nn-modal-backdrop" onClick={() => {
+                    if (!removingPassword) setShowRemovePasswordConfirm(false);
+                }}>
+                    <section className="nn-modal nn-remove-password-modal" role="dialog" aria-modal="true" aria-labelledby="nn-remove-password-title" onClick={(event) => event.stopPropagation()}>
+                        <button className="nn-modal-close" onClick={() => setShowRemovePasswordConfirm(false)} disabled={removingPassword} aria-label="Close confirmation">
                             <X size={18} />
                         </button>
                         <div className="nn-modal-icon"><LockKeyhole size={22} /></div>
                         <h2 id="nn-remove-password-title">Remove note password?</h2>
-                        <p>
-                            Are you sure you want to remove the password protection?
-                            Anyone with access to this note link may be able to view the note.
-                        </p>
+                        <p>Are you sure you want to remove the password protection? Anyone with access to this note link may be able to view the note.</p>
                         <div className="nn-confirm-actions">
-                            <button
-                                type="button"
-                                className="nn-secondary"
-                                onClick={() => setShowRemovePasswordConfirm(false)}
-                                disabled={removingPassword}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="button"
-                                className="nn-danger-btn"
-                                onClick={removePassword}
-                                disabled={removingPassword}
-                            >
+                            <button type="button" className="nn-secondary" onClick={() => setShowRemovePasswordConfirm(false)} disabled={removingPassword}>Cancel</button>
+                            <button type="button" className="nn-danger-btn" onClick={removePassword} disabled={removingPassword}>
                                 {removingPassword ? "Removing..." : "Yes, Remove Password"}
                             </button>
                         </div>
@@ -1399,9 +1172,7 @@ export default function NoteNest() {
             {modal && (
                 <div className="nn-modal-backdrop" onClick={() => setModal("")}>
                     <section className="nn-modal" onClick={(event) => event.stopPropagation()}>
-                        <button className="nn-modal-close" onClick={() => setModal("")} aria-label="Close">
-                            <X size={18} />
-                        </button>
+                        <button className="nn-modal-close" onClick={() => setModal("")} aria-label="Close"><X size={18} /></button>
 
                         {modal === "password" ? (
                             <>
@@ -1410,26 +1181,14 @@ export default function NoteNest() {
                                 <p>Use at least 8 characters. The password is securely hashed on the server; the original password is never saved in your notes.</p>
                                 <label className="nn-field-label">Password</label>
                                 <div className="nn-password-input">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={passwordInput}
-                                        onChange={(event) => setPasswordInput(event.target.value)}
-                                        placeholder="Enter a password (8+ characters)"
-                                        autoComplete="new-password"
-                                    />
+                                    <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={(event) => setPasswordInput(event.target.value)} placeholder="Enter a password (8+ characters)" autoComplete="new-password" />
                                     <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label="Show password">
                                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                     </button>
                                 </div>
                                 <label className="nn-field-label">Confirm Password</label>
                                 <div className="nn-password-input">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={confirmPasswordInput}
-                                        onChange={(event) => setConfirmPasswordInput(event.target.value)}
-                                        placeholder="Confirm your password"
-                                        autoComplete="new-password"
-                                    />
+                                    <input type={showPassword ? "text" : "password"} value={confirmPasswordInput} onChange={(event) => setConfirmPasswordInput(event.target.value)} placeholder="Confirm your password" autoComplete="new-password" />
                                 </div>
                                 <button className="nn-primary nn-modal-submit" onClick={savePassword}>Save password</button>
                             </>
@@ -1439,16 +1198,9 @@ export default function NoteNest() {
                                 <h2>Unlock this note</h2>
                                 <p>This note is password-protected. Enter its password to view or edit the content.</p>
                                 <div className="nn-password-input">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={passwordInput}
-                                        onChange={(event) => setPasswordInput(event.target.value)}
-                                        onKeyDown={(event) => {
-                                            if (event.key === "Enter") unlockNote();
-                                        }}
-                                        placeholder="Enter note password"
-                                        autoComplete="current-password"
-                                    />
+                                    <input type={showPassword ? "text" : "password"} value={passwordInput} onChange={(event) => setPasswordInput(event.target.value)} onKeyDown={(event) => {
+                                        if (event.key === "Enter") unlockNote();
+                                    }} placeholder="Enter note password" autoComplete="current-password" />
                                     <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label="Show password">
                                         {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                                     </button>
@@ -1463,15 +1215,9 @@ export default function NoteNest() {
                                 <label className="nn-field-label">Note URL</label>
                                 <div className="nn-url-edit-preview">
                                     <span>{window.location.host}/</span>
-                                    <input
-                                        className="nn-modal-text-input"
-                                        value={urlInput}
-                                        onChange={(event) => setUrlInput(event.target.value)}
-                                        placeholder="my-new-note"
-                                        onKeyDown={(event) => {
-                                            if (event.key === "Enter") changeUrl();
-                                        }}
-                                    />
+                                    <input className="nn-modal-text-input" value={urlInput} onChange={(event) => setUrlInput(event.target.value)} placeholder="my-new-note" onKeyDown={(event) => {
+                                        if (event.key === "Enter") changeUrl();
+                                    }} />
                                 </div>
                                 <button className="nn-primary nn-modal-submit" onClick={changeUrl}>Update URL</button>
                             </>

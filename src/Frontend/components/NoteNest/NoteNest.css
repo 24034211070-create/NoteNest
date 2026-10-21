@@ -203,24 +203,6 @@ button:disabled {
     font-size: 11px;
 }
 
-.nn-title-input {
-    width: 100%;
-    min-width: 0;
-    margin: 23px 0 18px;
-    padding: 0;
-    color: var(--text);
-    background: transparent;
-    border: 0;
-    outline: none;
-    font-size: clamp(24px, 3vw, 33px);
-    font-weight: 750;
-    letter-spacing: -.8px;
-}
-
-.nn-title-input::placeholder {
-    color: #aab4c2;
-}
-
 .nn-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -419,7 +401,7 @@ button:disabled {
     width: 34px;
     height: 34px;
     min-height: 34px;
-    padding: 0;
+    padding-top: 29px;
     color: var(--muted);
     background: transparent;
     border: 1px solid transparent;
