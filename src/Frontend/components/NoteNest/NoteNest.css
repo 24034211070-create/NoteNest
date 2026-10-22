@@ -167,7 +167,7 @@ button:disabled {
 .nn-layout {
     position: relative;
     width: min(1320px, 92%);
-    margin: 30px auto 45px;
+    margin: 35px auto 45px;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
