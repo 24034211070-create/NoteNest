@@ -186,7 +186,6 @@ button:disabled {
 .nn-editor-card {
     position: relative;
     min-height: 500px;
-    height: 650px;
     padding: 27px 32px 20px;
     display: flex;
     flex-direction: column;
