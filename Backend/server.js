@@ -359,47 +359,6 @@ app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// ADMIN: DELETE NOTE
-// Sirf current active Super Admin session note delete kar sakti hai.
-// Password-protected notes ko bhi admin delete kar sakta hai.
-app.delete("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const existing = await findNote(id);
-
-    if (!existing) {
-      return res.status(404).json({
-        error: "Note nahi mila ya pehle hi delete ho chuka hai.",
-      });
-    }
-
-    await prisma.note.delete({
-      where: { id },
-    });
-
-    res.setHeader("Cache-Control", "no-store");
-
-    return res.status(200).json({
-      message: "Note successfully deleted!",
-      deletedId: id,
-    });
-  } catch (error) {
-    // Agar note kisi concurrent request mein delete ho gaya ho.
-    if (error.code === "P2025") {
-      return res.status(404).json({
-        error: "Note nahi mila ya pehle hi delete ho chuka hai.",
-      });
-    }
-
-    console.error("Admin delete note error:", error);
-
-    return res.status(500).json({
-      error: "Admin note delete nahi ho saka.",
-    });
-  }
-});
-
 // PUBLIC NOTES LIST
 app.get("/api/notes", async (req, res) => {
   try {
@@ -651,7 +610,7 @@ app.delete("/api/notes/:id/password", async (req, res) => {
   }
 });
 
-// PUBLIC DELETE NOTE
+// DELETE NOTE
 app.delete("/api/notes/:id", async (req, res) => {
   try {
     const { id } = req.params;
