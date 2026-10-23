@@ -24,6 +24,17 @@ const allowedOrigins = [
   "https://notenest-owd2.onrender.com",
 ];
 
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    optionsSuccessStatus: 204,
+  }),
+);
+
+app.use(express.json({ limit: "1mb" }));
+
 const corsOptions = {
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
