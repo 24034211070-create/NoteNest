@@ -13,6 +13,8 @@ export default function AdminLogin({ onLogin }) {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        if (loading) return;
+
         setError("");
         setLoading(true);
 
@@ -20,13 +22,19 @@ export default function AdminLogin({ onLogin }) {
             const response = await fetch(`${API_URL}/admin/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username: username.trim(), password })
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                throw new Error(data.message || data.error || "Login failed. Details check karo.");
+                throw new Error(
+                    data.message ||
+                    data.error ||
+                    (response.status === 429
+                        ? "Bahut zyada login attempts. Retry-After ke baad dobara try karo."
+                        : "Login failed. Username aur password check karo.")
+                );
             }
 
             if (!data.token) {
@@ -36,7 +44,11 @@ export default function AdminLogin({ onLogin }) {
             sessionStorage.setItem("notenest-admin-token", data.token);
             onLogin(data.token);
         } catch (err) {
-            setError(err.message || "Server se connect nahi ho paya.");
+            if (err instanceof TypeError) {
+                setError("Backend se connection nahi ho raha. CORS settings aur Render backend status check karo.");
+            } else {
+                setError(err.message || "Server se connect nahi ho paya.");
+            }
         } finally {
             setLoading(false);
         }
@@ -82,7 +94,11 @@ export default function AdminLogin({ onLogin }) {
                     </button>
                 </div>
 
-                {error && <div className="admin-login-error">{error}</div>}
+                {error && (
+                    <div className="admin-login-error" role="alert">
+                        {error}
+                    </div>
+                )}
 
                 <button type="submit" disabled={loading}>
                     {loading ? "Signing in..." : "Sign In"}
