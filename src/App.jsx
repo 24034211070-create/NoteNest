@@ -12,6 +12,7 @@ function AdminDashboard({ token, onLogout }) {
   const [openingNote, setOpeningNote] = useState(false);
   const [error, setError] = useState("");
   const [deletingNoteId, setDeletingNoteId] = useState(null);
+  const [noteToDelete, setNoteToDelete] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -77,13 +78,14 @@ function AdminDashboard({ token, onLogout }) {
     }
   };
 
-
   const deleteNote = async note => {
-    const confirmed = window.confirm(
-      `Are you sure you want to permanently delete "${note.title || "Untitled"}"? This action cannot be undone.`
-    );
+    setNoteToDelete(note);
+  };
 
-    if (!confirmed) return;
+  const confirmDeleteNote = async () => {
+    if (!noteToDelete) return;
+
+    const note = noteToDelete;
 
     setDeletingNoteId(note.id);
     setError("");
@@ -107,7 +109,9 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Note delete nahi ho saka.");
+        throw new Error(
+          data.error || data.message || "Note delete nahi ho saka."
+        );
       }
 
       setNotes(currentNotes =>
@@ -117,13 +121,14 @@ function AdminDashboard({ token, onLogout }) {
       setSelectedNote(current =>
         current?.id === note.id ? null : current
       );
+
+      setNoteToDelete(null);
     } catch (err) {
       setError(err.message || "Note delete nahi ho saka.");
     } finally {
       setDeletingNoteId(null);
     }
   };
-
 
   const protectedCount = notes.filter(note => note.isPasswordProtected).length;
   const filteredNotes = notes.filter(note => {
