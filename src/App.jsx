@@ -79,13 +79,11 @@ function AdminDashboard({ token, onLogout }) {
   };
 
   const deleteNote = async note => {
-    setNoteToDelete(note);
-  };
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${note.title || "Untitled"}"? This action cannot be undone.`
+    );
 
-  const confirmDeleteNote = async () => {
-    if (!noteToDelete) return;
-
-    const note = noteToDelete;
+    if (!confirmed) return;
 
     setDeletingNoteId(note.id);
     setError("");
@@ -109,9 +107,7 @@ function AdminDashboard({ token, onLogout }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.error || data.message || "Note delete nahi ho saka."
-        );
+        throw new Error(data.error || data.message || "Note delete nahi ho saka.");
       }
 
       setNotes(currentNotes =>
@@ -121,8 +117,6 @@ function AdminDashboard({ token, onLogout }) {
       setSelectedNote(current =>
         current?.id === note.id ? null : current
       );
-
-      setNoteToDelete(null);
     } catch (err) {
       setError(err.message || "Note delete nahi ho saka.");
     } finally {
