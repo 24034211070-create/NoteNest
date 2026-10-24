@@ -214,33 +214,6 @@ app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   }
 });
 
-// ADMIN: PERMANENTLY DELETE NOTE
-app.delete("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const existing = await findNote(id);
-
-    if (!existing) {
-      return res.status(404).json({
-        error: "Note nahi mila. Ho sakta hai note pehle hi delete ho chuka ho.",
-      });
-    }
-
-    await prisma.note.delete({ where: { id } });
-
-    res.json({
-      success: true,
-      message: "Note successfully deleted!",
-      id,
-    });
-  } catch (error) {
-    console.error("Admin delete note error:", error);
-    res.status(500).json({
-      error: "Note delete nahi ho saka. Please dobara try karo.",
-    });
-  }
-});
-
 // PUBLIC NOTES LIST
 app.get("/api/notes", async (req, res) => {
   try {
