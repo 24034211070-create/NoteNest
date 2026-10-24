@@ -279,7 +279,16 @@ function AdminDashboard({ token, onLogout }) {
               {openingNote ? (
                 <div className="admin-modal-loading"><span className="admin-loader" />Loading note content...</div>
               ) : (
-                <div className="admin-note-content">{selectedNote.content || "This note is empty or its content is not available."}</div>
+
+                <div className="admin-note-content">
+                  {selectedNote.content ? (
+                    <div dangerouslySetInnerHTML={{
+                      __html: selectedNote.content
+                    }}
+                    />
+                  ) : ("This note is empty or its content is not available.")}
+                </div>
+
               )}
             </div>
             <div className="admin-modal-footer">
