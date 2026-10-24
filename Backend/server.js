@@ -214,6 +214,26 @@ app.get("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
   }
 });
 
+app.delete("/api/admin/notes/:id", requireSuperAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await findNote(id);
+
+    if (!existing) {
+      return res.status(404).json({ error: "Note nahi mila." });
+    }
+
+    await prisma.note.delete({ where: { id } });
+
+    return res.json({ message: "Note successfully deleted!" });
+  } catch (error) {
+    console.error("Admin delete note error:", error);
+    return res.status(500).json({
+      error: "Note delete nahi ho saka.",
+    });
+  }
+});
+
 // PUBLIC NOTES LIST
 app.get("/api/notes", async (req, res) => {
   try {

@@ -11,6 +11,7 @@ function AdminDashboard({ token, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [openingNote, setOpeningNote] = useState(false);
   const [error, setError] = useState("");
+  const [deletingNoteId, setDeletingNoteId] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,6 +77,54 @@ function AdminDashboard({ token, onLogout }) {
     }
   };
 
+
+  const deleteNote = async note => {
+    const confirmed = window.confirm(
+      `Are you sure you want to permanently delete "${note.title || "Untitled"}"? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingNoteId(note.id);
+    setError("");
+
+    try {
+      const response = await fetch(
+        `${API_URL}/admin/notes/${encodeURIComponent(note.id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        onLogout();
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.message || "Note delete nahi ho saka.");
+      }
+
+      setNotes(currentNotes =>
+        currentNotes.filter(item => item.id !== note.id)
+      );
+
+      setSelectedNote(current =>
+        current?.id === note.id ? null : current
+      );
+    } catch (err) {
+      setError(err.message || "Note delete nahi ho saka.");
+    } finally {
+      setDeletingNoteId(null);
+    }
+  };
+
+
   const protectedCount = notes.filter(note => note.isPasswordProtected).length;
   const filteredNotes = notes.filter(note => {
     const matchesSearch = `${note.title || ""} ${note.id || ""}`.toLowerCase().includes(search.toLowerCase());
@@ -135,7 +184,26 @@ function AdminDashboard({ token, onLogout }) {
                   </span>
                 </td>
                 <td>{formatDate(note.updatedAt || note.createdAt)}</td>
-                <td><button className="admin-view-button" onClick={() => openNote(note)}>View →</button></td>
+
+                <td>
+                  <div className="admin-actions">
+                    <button
+                      className="admin-view-button"
+                      onClick={() => openNote(note)}
+                    >
+                      View →
+                    </button>
+
+                    <button
+                      className="admin-delete-button"
+                      onClick={() => deleteNote(note)}
+                      disabled={deletingNoteId === note.id}
+                    >
+                      {deletingNoteId === note.id ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                </td>
+
               </tr>
             ))}
           </tbody>
@@ -344,6 +412,12 @@ function AdminDashboard({ token, onLogout }) {
         .admin-table-note>div:last-child{display:grid;gap:5px;min-width:0}.admin-table-note strong{max-width:260px;overflow:hidden;color:#354258;font-size:12px;text-overflow:ellipsis}.admin-table-note span{color:#9aa4b5;font-size:10px}
         .admin-badge{display:inline-block;padding:6px 8px;border-radius:5px;font-size:10px}.admin-badge.standard{background:#edf8f2;color:#278457}.admin-badge.protected{background:#fff5e2;color:#a77719}
         .admin-view-button{padding:7px 10px;border:1px solid #e0e9fa;border-radius:5px;background:#f6f9ff;color:#3978e8;font:inherit;font-size:11px;font-weight:600;cursor:pointer}.admin-view-button:hover{background:#e9f1ff}
+        
+      .admin-actions{display:flex;align-items:center;gap:8px}
+      .admin-delete-button{padding:7px 10px;border:1px solid #f0caca;border-radius:5px;background:#fff5f5;color:#c43f3f;font:inherit;font-size:11px;font-weight:600;cursor:pointer}
+      .admin-delete-button:hover{background:#ffe8e8}
+      .admin-delete-button:disabled{opacity:.6;cursor:wait}
+
         .admin-empty-state{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;min-height:180px;padding:25px;color:#8793a7;font-size:12px;text-align:center}
         .admin-empty-state strong{color:#425069;font-size:14px}.admin-empty-state p{margin:0;line-height:1.5}.admin-empty-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:10px;background:#edf3ff;color:#3978e8;font-size:22px}
         .admin-loader{width:23px;height:23px;border:2px solid #dce8fb;border-top-color:#3978e8;border-radius:50%;animation:admin-spin .8s linear infinite}
