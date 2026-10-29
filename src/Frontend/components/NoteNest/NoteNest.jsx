@@ -265,20 +265,24 @@ export default function NoteNest() {
         }
     }
 
+
     async function loadPathNote(slug, { updateUrl = false } = {}) {
         if (!slug) return;
+
         const requestKey = `${slug}:${Date.now()}`;
         pathLoadRef.current = requestKey;
 
         try {
             const response = await api.get(`/notes/by-slug/${encodeURIComponent(slug)}`);
             if (pathLoadRef.current !== requestKey) return;
+
             const serverNote = getApiNote(response.data);
             if (!serverNote?.id) throw new Error("Backend ne note ID return nahi ki.");
 
             const session = serverNote.isPasswordProtected
                 ? readUnlockedNoteSession(serverNote.id)
                 : null;
+
             const note = makeFrontendNote(serverNote, session);
 
             setNotes((previous) => {
@@ -294,16 +298,25 @@ export default function NoteNest() {
             setCurrentPathSlug(note.slug || slug);
             localStorage.setItem(ACTIVE_NOTE_KEY, note.id);
 
-            if (updateUrl) window.history.pushState({}, "", `/${note.slug || slug}`);
+            if (updateUrl) {
+                window.history.pushState({}, "", `/${note.slug || slug}`);
+            }
 
             if (session?.token) {
-                setUnlockedTokens((previous) => ({ ...previous, [note.dbId]: session.token }));
+                setUnlockedTokens((previous) => ({
+                    ...previous,
+                    [note.dbId || note.id]: session.token
+                }));
             }
         } catch (error) {
             console.error("Failed to load URL note:", error);
-            notify(error.response?.data?.error || "URL wala note load nahi ho saka. Backend connection check karo.");
+            notify(
+                error.response?.data?.error ||
+                "URL wala note load nahi ho saka. Backend connection check karo."
+            );
         }
     }
+
 
     useEffect(() => {
         let cancelled = false;
@@ -480,41 +493,61 @@ export default function NoteNest() {
 
     useEffect(() => {
         if (!backendLoaded) return;
+
         try {
             const existing = readStoredUnlockSessions();
             const savedTokens = {};
 
+            // Keep valid existing sessions and their saved content.
             for (const [noteId, session] of Object.entries(existing)) {
                 const token = typeof session === "string" ? session : session?.token;
                 const expiresAt = getSessionExpiry(session, token);
+
                 if (token && expiresAt > Date.now()) {
                     savedTokens[noteId] = {
                         ...(typeof session === "object" && session ? session : {}),
                         token,
                         expiresAt,
-                        content: typeof session?.content === "string" ? session.content : ""
+                        content:
+                            typeof session?.content === "string"
+                                ? session.content
+                                : ""
                     };
                 }
             }
 
+            // Update sessions for currently unlocked notes.
             for (const [noteId, token] of Object.entries(unlockedTokens)) {
                 const decodedExpiry = getTokenExpiry(token);
                 const previousSession = savedTokens[noteId];
+
                 const expiresAt = decodedExpiry > 0
                     ? decodedExpiry
                     : Number(previousSession?.expiresAt) > Date.now()
                         ? Number(previousSession.expiresAt)
                         : Date.now() + UNLOCK_SESSION_FALLBACK_MS;
+
                 if (expiresAt <= Date.now()) continue;
 
-                const note = notes.find((item) => (item.dbId || item.id) === noteId);
+                const note = notes.find(
+                    (item) => (item.dbId || item.id) === noteId
+                );
+
+                const content = typeof note?.content === "string" && note.content.length > 0
+                    ? note.content
+                    : (previousSession?.content ?? "");
+
                 savedTokens[noteId] = {
                     token,
                     expiresAt,
-                    content: note ? (note.content ?? "") : (previousSession?.content ?? "")
+                    content
                 };
             }
-            sessionStorage.setItem(UNLOCKED_TOKENS_KEY, JSON.stringify(savedTokens));
+
+            sessionStorage.setItem(
+                UNLOCKED_TOKENS_KEY,
+                JSON.stringify(savedTokens)
+            );
         } catch (error) {
             console.error("Could not persist unlock session:", error);
         }
