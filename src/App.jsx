@@ -250,7 +250,7 @@ function AdminDashboard({ token, onLogout }) {
             <button className="admin-menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open navigation">☰</button>
             <div>
               <div className="admin-breadcrumb">NoteNest / Admin</div>
-              <h1>{activeView === "dashboard" ? "Dashboard" : activeView === "protected" ? "" : "All Notes"}</h1>
+              <h1>{activeView === "dashboard" ? "Dashboard" : activeView === "protected" ? "" : ""}</h1>
             </div>
           </div>
           <div className="admin-topbar-right"><span className="admin-status-dot" /><span>Admin Session Active</span><div className="admin-top-avatar">SA</div></div>
