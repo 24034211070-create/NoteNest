@@ -182,15 +182,65 @@ app.get("/api/admin/verify", requireSuperAdmin, (req, res) => {
 });
 
 // ADMIN: ALL NOTES
+// ADMIN: ALL NOTES (PAGINATED)
 app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
   try {
+    const pageValue = Number(req.query.page);
+    const requestedPage =
+      Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1;
+
+    const limit = 20;
+    const search =
+      typeof req.query.search === "string" ? req.query.search.trim() : "";
+    const protectedOnly = req.query.protected === "true";
+
+    const where = {};
+
+    if (protectedOnly) {
+      where.isPasswordProtected = true;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { id: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [filteredCount, totalNotes, totalProtected] = await Promise.all([
+      prisma.note.count({ where }),
+      prisma.note.count(),
+      prisma.note.count({
+        where: { isPasswordProtected: true },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(filteredCount / limit);
+    const currentPage = Math.min(requestedPage, Math.max(totalPages, 1));
+
     const notes = await prisma.note.findMany({
+      where,
       orderBy: { updatedAt: "desc" },
+      skip: (currentPage - 1) * limit,
+      take: limit,
     });
-    res.json(notes.map(adminSafeNote));
+
+    return res.json({
+      notes: notes.map(adminSafeNote),
+      pagination: {
+        currentPage,
+        pageSize: limit,
+        totalNotes: filteredCount,
+        totalPages,
+      },
+      stats: {
+        totalNotes,
+        totalProtected,
+      },
+    });
   } catch (error) {
     console.error("Admin fetch notes error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Admin notes fetch nahi ho sake.",
     });
   }
