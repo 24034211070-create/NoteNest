@@ -189,7 +189,7 @@ app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
     const requestedPage =
       Number.isInteger(pageValue) && pageValue > 0 ? pageValue : 1;
 
-    const limit = 20;
+    const limit = 10;
     const search =
       typeof req.query.search === "string" ? req.query.search.trim() : "";
     const protectedOnly = req.query.protected === "true";
@@ -215,7 +215,7 @@ app.get("/api/admin/notes", requireSuperAdmin, async (req, res) => {
       }),
     ]);
 
-    const totalPages = Math.ceil(filteredCount / limit);
+    const totalPages = Math.min(Math.ceil(filteredCount / limit), 10);
     const currentPage = Math.min(requestedPage, Math.max(totalPages, 1));
 
     const notes = await prisma.note.findMany({

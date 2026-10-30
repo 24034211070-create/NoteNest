@@ -21,7 +21,7 @@ function AdminDashboard({ token, onLogout }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     currentPage: 1,
-    pageSize: 20,
+    pageSize: 10,
     totalNotes: 0,
     totalPages: 0
   });
@@ -69,7 +69,7 @@ function AdminDashboard({ token, onLogout }) {
 
       setPagination(data.pagination || {
         currentPage: 1,
-        pageSize: 20,
+        pageSize: 10,
         totalNotes: 0,
         totalPages: 0
       });
