@@ -250,7 +250,7 @@ function AdminDashboard({ token, onLogout }) {
             <button className="admin-menu-toggle" onClick={() => setSidebarOpen(true)} aria-label="Open navigation">☰</button>
             <div>
               <div className="admin-breadcrumb">NoteNest / Admin</div>
-              <h1>{activeView === "dashboard" ? "Dashboard" : activeView === "protected" ? "Protected Notes" : "All Notes"}</h1>
+              <h1>{activeView === "dashboard" ? "Dashboard" : activeView === "protected" ? "" : "All Notes"}</h1>
             </div>
           </div>
           <div className="admin-topbar-right"><span className="admin-status-dot" /><span>Admin Session Active</span><div className="admin-top-avatar">SA</div></div>
@@ -300,7 +300,7 @@ function AdminDashboard({ token, onLogout }) {
             <>
               <section className="admin-welcome">
                 <div>
-                  <h2>{activeView === "protected" ? "Protected Notes" : "Notes Management"}</h2>
+                  <h2>{activeView === "protected" ? "" : "Notes Management"}</h2>
                   <p>{activeView === "protected" ? "Browse notes marked as password protected." : "Search, browse and inspect notes in your workspace."}</p>
                 </div>
                 <button className="admin-primary-button" onClick={loadNotes} disabled={loading}><span>↻</span>{loading ? "Refreshing..." : "Refresh"}</button>
