@@ -133,7 +133,7 @@ app.post("/api/admin/login", async (req, res) => {
     const adminPasswordHash = process.env.ADMIN_PASSWORD_HASH;
 
     if (!adminUsername || !adminPasswordHash) {
-      console.error("Admin credentials environment mein configured nahi hain.");
+      console.error("Admin credentials environment Has Not configured .");
       return res.status(500).json({
         error: "Admin login configure nahi hai.",
       });
